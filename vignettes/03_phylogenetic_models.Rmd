@@ -19,12 +19,13 @@ knitr::opts_chunk$set(
 
 ## Back to the Rhinograds: Phylogenetic Structural Equation Models (PhyBaSE) with `because`
 
-One of the core features of `because` is the ability to fit Phylogenetic Bayesian Structural Equation models (PhyBaSE), allowing researchers to account for shared evolutionary history among species when analysing the causal relationships among traits.
+One of the core features of the `because` package is the ability to fit Phylogenetic Bayesian Structural Equation models (PhyBaSE) through the `because.phybase` module, allowing researchers to account for shared evolutionary history among species when analysing the causal relationships among traits.
 
 Once again we will use the Rhinogradentia dataset and tree previously analysed in Gonzalez-Voyer and von Hardenberg, (2014) and in von Hardenberg and Gonzalez-Voyer (2025). Let's start by loading the necessary packages and data:
 
 ```{r}
 library(because)
+library(because.phybase)
 
 data(rhino.dat)
 data(rhino.tree)

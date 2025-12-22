@@ -22,3 +22,4 @@ Suggests:
     rmarkdown
 Config/testthat/edition: 3
 VignetteBuilder: knitr, rmarkdown
+URL: https://because-pkg.github.io/because.phybase/
