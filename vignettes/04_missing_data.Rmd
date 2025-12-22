@@ -1,5 +1,5 @@
 ---
-title: "Missing Data Imputation in because"
+title: "Phylogenetic Missing Data Imputation"
 author: "Achaz von Hardenberg"
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
