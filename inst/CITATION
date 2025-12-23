@@ -2,7 +2,7 @@ citHeader("To cite package 'because.phybase' in publications use:")
 
 citEntry(
   entry = "Manual",
-  title = "because.phybase: Phylogenetic Structural Equation Models (PhyBaSE) in R'",
+  title = "because.phybase: Phylogenetic Structural Equation Models (PhyBaSE) in R",
   author = c(
     person("Achaz", "von Hardenberg", role = c("aut", "cre")),
     person("Alejandro", "Gonzalez-Voyer", role = "aut")
