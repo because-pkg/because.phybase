@@ -1,4 +1,13 @@
 url: https://because-pkg.github.io/because.phybase/
 template:
   bootstrap: 5
+  light-switch: true
+  bslib:
+    primary: "#009F7F"
+    navbar-bg: "#009F7F"
+navbar:
+  structure:
+    left: [home, reference, articles]
+    right: [search, github]
+
 
