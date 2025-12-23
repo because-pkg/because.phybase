@@ -72,44 +72,22 @@ automatically using Bayesian imputation. Unlike frequentist methods that
 often require deleting rows with missing values (list-wise deletion),
 <code>because</code> treats missing values as unknown parameters to be
 estimated by the model.</p>
-<p>This vignette demonstrates how <code>because</code> handles missing
-values in both: 1. <strong>Response variables</strong>: Imputed based on
-predictors and phylogenetic correlations. 2. <strong>Predictor
-variables</strong>: Automatically treated as response variables to
-enable imputation.</p>
+<p>When installing the <code>because.phybase</code> extension,
+<code>because</code> handles missing values imputation using also the
+information available in the phylogenetic correlations among species
+both in the response nodes (imputing both based on the predictors as
+well as the phylogenetic correlations) as well as in parent-only nodes
+(Automatically treating the node as a response variable to enable
+phylogenetic imputation.</p>
 <div class="section level2">
 <h2 id="setup">Setup<a class="anchor" aria-label="anchor" href="#setup"></a>
 </h2>
 <p>First, let’s load the package and the standard <code>rhino</code>
 dataset.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://because-pkg.github.io/because/" class="external-link">because</a></span><span class="op">)</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/emmanuelparadis/ape" class="external-link">ape</a></span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># Simulate Rhino-like data (since original data is in because.phybase)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">123</span><span class="op">)</span></span>
-<span><span class="va">N</span> <span class="op">&lt;-</span> <span class="fl">100</span></span>
-<span><span class="va">rhino.tree</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/ape/man/rtree.html" class="external-link">rtree</a></span><span class="op">(</span><span class="va">N</span><span class="op">)</span></span>
-<span><span class="va">rhino.tree</span><span class="op">$</span><span class="va">edge.length</span> <span class="op">&lt;-</span> <span class="va">rhino.tree</span><span class="op">$</span><span class="va">edge.length</span> <span class="op">/</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">max</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/ape/man/branching.times.html" class="external-link">branching.times</a></span><span class="op">(</span><span class="va">rhino.tree</span><span class="op">)</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># Simulate traits to match the sem8 structure</span></span>
-<span><span class="co"># LS ~ BM</span></span>
-<span><span class="co"># NL ~ BM + RS</span></span>
-<span><span class="co"># DD ~ NL</span></span>
-<span><span class="va">BM</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="va">N</span><span class="op">)</span></span>
-<span><span class="va">RS</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="va">N</span><span class="op">)</span></span>
-<span><span class="va">LS</span> <span class="op">&lt;-</span> <span class="fl">0.5</span> <span class="op">*</span> <span class="va">BM</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="va">N</span><span class="op">)</span></span>
-<span><span class="va">NL</span> <span class="op">&lt;-</span> <span class="fl">0.5</span> <span class="op">*</span> <span class="va">BM</span> <span class="op">+</span> <span class="fl">0.6</span> <span class="op">*</span> <span class="va">RS</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="va">N</span><span class="op">)</span></span>
-<span><span class="va">DD</span> <span class="op">&lt;-</span> <span class="fl">0.5</span> <span class="op">*</span> <span class="va">NL</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="va">N</span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">rhino.dat</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
-<span>  SP <span class="op">=</span> <span class="va">rhino.tree</span><span class="op">$</span><span class="va">tip.label</span>,</span>
-<span>  BM <span class="op">=</span> <span class="va">BM</span>,</span>
-<span>  RS <span class="op">=</span> <span class="va">RS</span>,</span>
-<span>  LS <span class="op">=</span> <span class="va">LS</span>,</span>
-<span>  NL <span class="op">=</span> <span class="va">NL</span>,</span>
-<span>  DD <span class="op">=</span> <span class="va">DD</span></span>
-<span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://because-pkg.github.io/because.phybase/">because.phybase</a></span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">rhino.dat</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">rhino.tree</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="simulating-missing-data">Simulating Missing Data<a class="anchor" aria-label="anchor" href="#simulating-missing-data"></a>
@@ -117,7 +95,7 @@ dataset.</p>
 <p>We will artificially introduce missing values (<code>NA</code>) into
 the dataset to demonstrate how <code>because</code> handles them. We’ll
 add missingness to: * <code>LS</code> (Litter Size): A response variable
-in our model. * <code>BM</code> (Body Mass): A predictor variable.</p>
+in our model. * <code>BM</code> (Body Mass): A parent-only variable.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Create a copy of the data</span></span>
 <span><span class="va">rhino_na</span> <span class="op">&lt;-</span> <span class="va">rhino.dat</span></span>
@@ -138,11 +116,12 @@ in our model. * <code>BM</code> (Body Mass): A predictor variable.</p>
 <div class="section level2">
 <h2 id="the-model">The Model<a class="anchor" aria-label="anchor" href="#the-model"></a>
 </h2>
-<p>We define the same structural equation model (sem8) as in previous
-vignettes: * Body Mass (<code>BM</code>) affects Litter Size
-(<code>LS</code>) and Nose Length (<code>NL</code>). * Range Size
-(<code>RS</code>) affects Nose Length (<code>NL</code>). * Nose Length
-(<code>NL</code>) affects Dispersal Distance (<code>DD</code>).</p>
+<p>We define the same structural equation model (sem8) as in the
+previous <a href="03_phylogenetic_model.html">vignette</a>: * Body Mass
+(<code>BM</code>) affects Litter Size (<code>LS</code>) and Nose Length
+(<code>NL</code>). * Range Size (<code>RS</code>) affects Nose Length
+(<code>NL</code>). * Nose Length (<code>NL</code>) affects Dispersal
+Distance (<code>DD</code>).</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">sem8.eq</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
 <span>  <span class="va">LS</span> <span class="op">~</span> <span class="va">BM</span>,</span>

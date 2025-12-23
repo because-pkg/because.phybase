@@ -32,4 +32,7 @@ remotes::install_github("because-pkg/because.phybase")
 ```
 
 `because.phybase` depends on `because` which will be installed
-authomatically as a dependency
+automatically as a dependency. For information on the functions
+available in the main `because` package and for tutorials on how to
+fully use all its functionalities please refer to the `because`
+[documentation](https://because-pkg.github.io)

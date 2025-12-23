@@ -5,43 +5,21 @@ Bayesian imputation. Unlike frequentist methods that often require
 deleting rows with missing values (list-wise deletion), `because` treats
 missing values as unknown parameters to be estimated by the model.
 
-This vignette demonstrates how `because` handles missing values in
-both: 1. **Response variables**: Imputed based on predictors and
-phylogenetic correlations. 2. **Predictor variables**: Automatically
-treated as response variables to enable imputation.
+When installing the `because.phybase` extension, `because` handles
+missing values imputation using also the information available in the
+phylogenetic correlations among species both in the response nodes
+(imputing both based on the predictors as well as the phylogenetic
+correlations) as well as in parent-only nodes (Automatically treating
+the node as a response variable to enable phylogenetic imputation.
 
 ## Setup
 
 First, let’s load the package and the standard `rhino` dataset.
 
 ``` r
-library(because)
-library(ape)
-
-# Simulate Rhino-like data (since original data is in because.phybase)
-set.seed(123)
-N <- 100
-rhino.tree <- rtree(N)
-rhino.tree$edge.length <- rhino.tree$edge.length / max(branching.times(rhino.tree))
-
-# Simulate traits to match the sem8 structure
-# LS ~ BM
-# NL ~ BM + RS
-# DD ~ NL
-BM <- rnorm(N)
-RS <- rnorm(N)
-LS <- 0.5 * BM + rnorm(N)
-NL <- 0.5 * BM + 0.6 * RS + rnorm(N)
-DD <- 0.5 * NL + rnorm(N)
-
-rhino.dat <- data.frame(
-  SP = rhino.tree$tip.label,
-  BM = BM,
-  RS = RS,
-  LS = LS,
-  NL = NL,
-  DD = DD
-)
+library(because.phybase)
+data(rhino.dat)
+data(rhino.tree)
 ```
 
 ## Simulating Missing Data
@@ -49,7 +27,7 @@ rhino.dat <- data.frame(
 We will artificially introduce missing values (`NA`) into the dataset to
 demonstrate how `because` handles them. We’ll add missingness to: \*
 `LS` (Litter Size): A response variable in our model. \* `BM` (Body
-Mass): A predictor variable.
+Mass): A parent-only variable.
 
 ``` r
 # Create a copy of the data
@@ -71,10 +49,11 @@ sum(is.na(rhino_na$BM))
 
 ## The Model
 
-We define the same structural equation model (sem8) as in previous
-vignettes: \* Body Mass (`BM`) affects Litter Size (`LS`) and Nose
-Length (`NL`). \* Range Size (`RS`) affects Nose Length (`NL`). \* Nose
-Length (`NL`) affects Dispersal Distance (`DD`).
+We define the same structural equation model (sem8) as in the previous
+[vignette](https://because-pkg.github.io/because.phybase/articles/03_phylogenetic_model.md):
+\* Body Mass (`BM`) affects Litter Size (`LS`) and Nose Length (`NL`).
+\* Range Size (`RS`) affects Nose Length (`NL`). \* Nose Length (`NL`)
+affects Dispersal Distance (`DD`).
 
 ``` r
 sem8.eq <- list(
