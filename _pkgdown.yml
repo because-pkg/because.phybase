@@ -13,7 +13,7 @@ navbar:
   components:
     because:
       text: because
-      href: https://because-pkg.github.io/because/
+      href: https://because-pkg.github.io
 
 reference:
   - title: "S3 Methods for Phylogenetic Structures"
