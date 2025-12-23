@@ -18,10 +18,6 @@ To install `because.phybase`, run:
 remotes::install_github("because-pkg/because.phybase")
 ```
 
-Note: This package requires the main **because** package to be installed.
 
-``` r
-remotes::install_github("because-pkg/because")
-```
 
 
