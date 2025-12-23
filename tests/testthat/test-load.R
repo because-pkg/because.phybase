@@ -1,3 +1,4 @@
+library(because)
 test_that("package loads correctly", {
     expect_true(requireNamespace("because.phybase", quietly = TRUE))
     expect_true(requireNamespace("because", quietly = TRUE))

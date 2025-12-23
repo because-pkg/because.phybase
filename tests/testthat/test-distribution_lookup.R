@@ -1,3 +1,4 @@
+library(because)
 # Test script to reproduce distribution lookup error
 
 source("R/because_format_data.R")
