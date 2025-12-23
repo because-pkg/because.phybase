@@ -1,13 +1,15 @@
 # because.phybase
 
-### Phylogenetic Bayesian Structural Equation Module for 'because'
+### Phylogenetic Bayesian Structural Equation (PhyBaSE) extension for 'because'
 
-`because.phybase` extends the [because](https://github.com/because-pkg/because) package with support for phylogenetic covariance structures. It implements S3 methods for `phylo` and `multiPhylo` objects from the `ape` package, enabling Bayesian Structural Equation Models (SEMs) with phylogeneticaly-structured residuals (PhyBaSE, von Hardenberg & Gonzalez-Voyer, 2025).
+`because.phybase` extends the [because](https://because-pkg.github.io) package with support for phylogenetic covariance structures. It implements S3 methods for `phylo` and `multiPhylo` objects from the `ape` package, enabling Bayesian Structural Equation Models (SEMs) with phylogeneticaly-structured residuals (PhyBaSE, von Hardenberg & Gonzalez-Voyer, 2025).
 
 ## Features
 
 -   **Phylogenetic Covariance**: Incorporates phylogenetic relatedness into `because` models.
 -   **Phylogenetic Uncertainty**: Supports `multiPhylo` objects to account for uncertainty in tree topology or branch lengths.
+-   **Measurement error**: Accounting for measurement error in traits both providing repeated measures as well as specifying known measurement error variances.
+-   **Phylogenetic missing data imputation**: informs imputation of missing data using phylogenetic relationships.
 -   **Seamless Integration**: Designed to work transparently with `because` via S3 method dispatch.
 
 ## Installation
@@ -18,6 +20,6 @@ To install `because.phybase`, run:
 remotes::install_github("because-pkg/because.phybase")
 ```
 
-
+`because.phybase` depends on `because` which will be installed authomatically as a dependency
 
 
