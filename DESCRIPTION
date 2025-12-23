@@ -11,10 +11,12 @@ Description: Extends the 'because' package with phylogenetic covariance
 License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.2.3
+RoxygenNote: 7.3.3
 LazyData: true
+Depends:
+    because
 Imports: 
-    because,
+
     ape,
     MASS
 Suggests: 
