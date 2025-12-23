@@ -2,10 +2,10 @@ Package: because.phybase
 Title: Phylogenetic Structure Module for 'because'
 Version: 0.1.1
 Authors@R: 
-    person("Achaz", "von Hardenberg", , "achaz.hardenberg@unipv.it", role = c("aut", "cre"),
-           comment = c(ORCID = "0000-0002-9899-1687")),
-    person("Alejandro", "Gonzalez-Voyer", role = c("cre"),
-           comment = c(ORCID = "0000-0002-5072-1688"))
+    c(person("Achaz", "von Hardenberg", , "achaz.hardenberg@unipv.it", role = c("aut", "cre"),
+             comment = c(ORCID = "0000-0002-9899-1687")),
+      person("Alejandro", "Gonzalez-Voyer", role = "aut",
+             comment = c(ORCID = "0000-0002-5072-1688")))
 Description: Extends the 'because' package with phylogenetic covariance 
     structure support. Implements S3 methods for 'phylo' and 'multiPhylo' 
     objects from the 'ape' package, enabling Bayesian SEM with 
