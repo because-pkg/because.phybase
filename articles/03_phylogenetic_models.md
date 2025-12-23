@@ -14,8 +14,7 @@ Hardenberg and Gonzalez-Voyer (2025). Let’s start by loading the
 necessary packages and data:
 
 ``` r
-library(because)
-library(because.phybase)
+library(because.phybase) #the main `because` package will be loaded automatically 
 
 data(rhino.dat)
 data(rhino.tree)
@@ -165,14 +164,15 @@ This is the approach also used in other packages such as `MCMCglmm`
 
 ### Improved WAIC calculation
 
-In `because` we also improved the WAIC calculation. The WAIC is now
-computed directly from the pointwise log-likelihoods monitored during
-model fitting, rather than approximating it from the deviance as done
-previously. This approach, besides providing more accurate estimates of
-the WAIC than the deviance-based approximation provided by JAGS, also
-allows us to compute the standard errors for WAIC (following the method
-suggested by Vehtari et al. 2017) allowing for more reliable model
-comparisons.
+In `because` we improved the WAIC calculation, compared to how we
+calculated it in von Hardenberg & Gonzalez-Voyer, (2025). The WAIC is
+now computed directly from the pointwise log-likelihoods monitored
+during model fitting, rather than approximating it from the deviance as
+done previously. This approach, besides providing more accurate
+estimates of the WAIC than the deviance-based approximation provided by
+JAGS, also allows us to compute the standard errors for WAIC (following
+the method suggested by Vehtari et al. 2017) allowing for more reliable
+model comparisons.
 
 ### Testing conditional independencies with d-separation
 

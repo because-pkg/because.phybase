@@ -59,9 +59,9 @@
 </h1>
 </div>
 <div class="section level3">
-<h3 id="phylogenetic-bayesian-structural-equation-module-for-because">Phylogenetic Bayesian Structural Equation Module for ‘because’<a class="anchor" aria-label="anchor" href="#phylogenetic-bayesian-structural-equation-module-for-because"></a>
+<h3 id="phylogenetic-bayesian-structural-equation-phybase-extension-for-because">Phylogenetic Bayesian Structural Equation (PhyBaSE) extension for ‘because’<a class="anchor" aria-label="anchor" href="#phylogenetic-bayesian-structural-equation-phybase-extension-for-because"></a>
 </h3>
-<p><code>because.phybase</code> extends the <a href="https://github.com/because-pkg/because" class="external-link">because</a> package with support for phylogenetic covariance structures. It implements S3 methods for <code>phylo</code> and <code>multiPhylo</code> objects from the <code>ape</code> package, enabling Bayesian Structural Equation Models (SEMs) with phylogeneticaly-structured residuals (PhyBaSE, von Hardenberg &amp; Gonzalez-Voyer, 2025).</p>
+<p><code>because.phybase</code> extends the <a href="https://because-pkg.github.io" class="external-link">because</a> package with support for phylogenetic covariance structures. It implements S3 methods for <code>phylo</code> and <code>multiPhylo</code> objects from the <code>ape</code> package, enabling Bayesian Structural Equation Models (SEMs) with phylogeneticaly-structured residuals (PhyBaSE, von Hardenberg &amp; Gonzalez-Voyer, 2025).</p>
 </div>
 <div class="section level2">
 <h2 id="features">Features<a class="anchor" aria-label="anchor" href="#features"></a>
@@ -72,6 +72,10 @@
 <li>
 <strong>Phylogenetic Uncertainty</strong>: Supports <code>multiPhylo</code> objects to account for uncertainty in tree topology or branch lengths.</li>
 <li>
+<strong>Measurement error</strong>: Accounting for measurement error in traits both providing repeated measures as well as specifying known measurement error variances.</li>
+<li>
+<strong>Phylogenetic missing data imputation</strong>: informs imputation of missing data using phylogenetic relationships.</li>
+<li>
 <strong>Seamless Integration</strong>: Designed to work transparently with <code>because</code> via S3 method dispatch.</li>
 </ul>
 </div>
@@ -81,6 +85,7 @@
 <p>To install <code>because.phybase</code>, run:</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">remotes</span><span class="fu">::</span><span class="fu">install_github</span><span class="op">(</span><span class="st">"because-pkg/because.phybase"</span><span class="op">)</span></span></code></pre></div>
+<p><code>because.phybase</code> depends on <code>because</code> which will be installed authomatically as a dependency</p>
 </div>
 </div>
   </main><aside class="col-md-3"><div class="license">

@@ -81,8 +81,7 @@ analysed in Gonzalez-Voyer and von Hardenberg, (2014) and in von
 Hardenberg and Gonzalez-Voyer (2025). Let’s start by loading the
 necessary packages and data:</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://because-pkg.github.io/because/" class="external-link">because</a></span><span class="op">)</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://because-pkg.github.io/because.phybase/">because.phybase</a></span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://because-pkg.github.io/because.phybase/">because.phybase</a></span><span class="op">)</span> <span class="co">#the main `because` package will be loaded automatically </span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">rhino.dat</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">rhino.tree</span><span class="op">)</span></span></code></pre></div>
@@ -236,7 +235,8 @@ is derived from the posterior variance components as:
 <div class="section level3">
 <h3 id="improved-waic-calculation">Improved WAIC calculation<a class="anchor" aria-label="anchor" href="#improved-waic-calculation"></a>
 </h3>
-<p>In <code>because</code> we also improved the WAIC calculation. The
+<p>In <code>because</code> we improved the WAIC calculation, compared to
+how we calculated it in von Hardenberg &amp; Gonzalez-Voyer, (2025). The
 WAIC is now computed directly from the pointwise log-likelihoods
 monitored during model fitting, rather than approximating it from the
 deviance as done previously. This approach, besides providing more
