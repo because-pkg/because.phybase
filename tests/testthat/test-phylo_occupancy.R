@@ -85,7 +85,7 @@ alpha_det_est <- summ$results[grep("^alpha_p_Y", rownames(summ$results)), ]
 # Quick sanity check: plot true vs. estimated occupancy intercepts
 plot(
   alpha_psi,
-  alpha_psi_est$Mean,
+  alpha_psi_est[, "Mean"],
   xlab = "True occupancy intercept (α_ψ)",
   ylab = "Posterior mean estimate",
   main = "Phylogenetic occupancy: true vs. estimated"

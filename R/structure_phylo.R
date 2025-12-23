@@ -151,8 +151,8 @@ jags_structure_definition.multiPhylo <- function(
     if (optimize) {
         setup_code <- c(
             "    # Multi-tree phylogenetic Precision setup",
-            "    # Prec_multi[,,k] is passed as data",
-            "    # We select the k-th precision matrix: Prec_multi[1:N, 1:N, K]"
+            "    # Prec_multiPhylo[,,k] is passed as data",
+            "    # We select the k-th precision matrix: Prec_multiPhylo[1:N, 1:N, K]"
         )
         error_prior <- paste0(
             "    ",
@@ -162,7 +162,7 @@ jags_structure_definition.multiPhylo <- function(
             variable_name,
             "[1:N] ~ dmnorm(zeros[1:N], ",
             precision_parameter,
-            " * Prec_multi[1:N, 1:N, K])"
+            " * Prec_multiPhylo[1:N, 1:N, K])"
         )
     } else {
         setup_code <- c(
@@ -244,7 +244,7 @@ prepare_structure_data.multiPhylo <- function(
             vcv <- ape::vcv(structure[[i]])
             Prec_multi[,, i] <- solve(vcv)
         }
-        data_list[["Prec_multi"]] <- Prec_multi
+        data_list[["Prec_multiPhylo"]] <- Prec_multi
     } else {
         # Array of VCV Matrices
         multiVCV <- array(NA, dim = c(N, N, n_trees))
