@@ -15,7 +15,8 @@ RoxygenNote: 7.2.3
 LazyData: true
 Imports: 
     because,
-    ape
+    ape,
+    MASS
 Suggests: 
     testthat (>= 3.0.0),
     knitr,
