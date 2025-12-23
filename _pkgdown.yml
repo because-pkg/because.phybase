@@ -5,9 +5,8 @@ template:
   bslib:
     primary: "#009F7F"
     navbar-bg: "#009F7F"
+    navbar-fg: "#FFFFFF"
 navbar:
   structure:
     left: [home, reference, articles]
     right: [search, github]
-
-
