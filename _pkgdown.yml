@@ -5,7 +5,6 @@ template:
   bslib:
     primary: "#009F7F"
     navbar-bg: "#009F7F"
-    navbar-light-color: "#FFFFFF"
 navbar:
   structure:
     left: [home, reference, articles]
