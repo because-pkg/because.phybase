@@ -5,8 +5,23 @@ template:
   bslib:
     primary: "#009F7F"
     navbar-bg: "#009F7F"
-    navbar-fg: "#FFFFFF"
+    navbar-light-color: "#FFFFFF"
 navbar:
   structure:
     left: [home, reference, articles]
     right: [search, github]
+
+reference:
+  - title: "S3 Methods for Phylogenetic Structures"
+    desc: "Methods extending the because engine for `phylo` and `multiPhylo` objects."
+    contents:
+      - jags_structure_definition.phylo
+      - jags_structure_definition.multiPhylo
+      - prepare_structure_data.phylo
+      - prepare_structure_data.multiPhylo
+  - title: "Data"
+    contents:
+      - rhino.dat
+      - rhino.tree
+      - RhinoMulti.dat
+      - RhinoMulti_se.dat
