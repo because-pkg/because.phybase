@@ -1,0 +1,4 @@
+/* Force navbar brand to be white */
+.navbar-brand {
+  color: #FFFFFF !important;
+}
