@@ -1,5 +1,5 @@
 Package: because.phybase
-Title: Phylogenetic Structure Module for 'because'
+Title: PhyBaSE extension for 'because'
 Version: 0.1.1
 Authors@R: 
     c(person("Achaz", "von Hardenberg", , "achaz.hardenberg@unipv.it", role = c("aut", "cre"),
