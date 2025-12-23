@@ -9,7 +9,11 @@ template:
 navbar:
   structure:
     left: [home, reference, articles]
-    right: [search, github]
+    right: [because, search, github]
+  components:
+    because:
+      text: because
+      href: https://because-pkg.github.io/because/
 
 reference:
   - title: "S3 Methods for Phylogenetic Structures"

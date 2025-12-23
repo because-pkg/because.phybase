@@ -26,5 +26,6 @@ Suggests:
     rmarkdown
 Config/testthat/edition: 3
 VignetteBuilder: knitr, rmarkdown
-URL: https://because-pkg.github.io/because.phybase/
+URL: https://because-pkg.github.io/because.phybase/, https://github.com/because-pkg/because.phybase
+BugReports: https://github.com/because-pkg/because.phybase/issues
 Remotes: because-pkg/because
