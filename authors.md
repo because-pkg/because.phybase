@@ -10,6 +10,9 @@
 
 ## Citation
 
+Source:
+[`inst/CITATION`](https://github.com/because-pkg/because.phybase/blob/main/inst/CITATION)
+
 von Hardenberg A, Gonzalez-Voyer A (2025). *because.phybase:
 Phylogenetic Structural Equation Models (PhyBaSE) in R*. R package
 version 0.1.1, <https://because-pkg.github.io/because.phybase/>.
