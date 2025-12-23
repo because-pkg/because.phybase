@@ -8,7 +8,7 @@ Description: Extends the 'because' package with phylogenetic covariance
     structure support. Implements S3 methods for 'phylo' and 'multiPhylo' 
     objects from the 'ape' package, enabling Bayesian SEM with 
     phylogenetically-structured residuals.
-License: MIT + file LICENSE
+License: GPL (>= 3)
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.3
