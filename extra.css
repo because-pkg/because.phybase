@@ -4,14 +4,15 @@
 }
 
 /* 
-   Force link colors to override "light" theme defaults 
-   Using high specificity selectors to ensure hover works.
+   Force link colors to override "light" theme defaults.
+   We emulate Bootstrap's "navbar-dark" behavior here.
+   Standard Bootstrap dark navbar link color is rgba(255, 255, 255, 0.55).
 */
 
-/* Resting state: 50% white (greyish) */
+/* Resting state */
 .navbar-nav .nav-link,
 .navbar-light .navbar-nav .nav-link {
-  color: rgba(255, 255, 255, 0.5) !important;
+  color: rgba(255, 255, 255, 0.55) !important;
 }
 
 /* Hover/Focus/Active state: 100% white */
