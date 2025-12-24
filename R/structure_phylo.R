@@ -22,7 +22,6 @@ jags_structure_definition.phylo <- function(
     ...
 ) {
     if (optimize) {
-        print(paste("DEBUG: precision_parameter =", precision_parameter))
         # Optimized: Use pre-calculated precision matrix (Prec_phylo)
         setup_code <- c(
             "    # Phylogenetic precision matrix (pre-calculated)"
