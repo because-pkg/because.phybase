@@ -1,3 +1,50 @@
+#' Attach Evolutionary Model Specifications to Phylogenetic Structures
+#'
+#' This helper attaches an `"evo_model"` attribute to a `phylo` or `multiPhylo` object.
+#' By default, `because` assumes a Brownian Motion (BM) model. You can use this
+#' function to specify node-specific evolutionary models (e.g., Ornstein-Uhlenbeck)
+#' for different response variables within the same causal graph.
+#'
+#' @param tree A `phylo` or `multiPhylo` object.
+#' @param model A named character vector mapping response variables to evolutionary models.
+#'   Valid options are `"BM"` (Brownian Motion) and `"OU"` (Ornstein-Uhlenbeck).
+#'   If unnamed and length 1, the model is applied globally to all phylogenetically
+#'   structured responses in the SEM.
+#' @param n_alpha Number of points for the OU `alpha` parameter grid (default 50).
+#'
+#' @return The original tree object with an `"evo_model"` attribute attached.
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' # Apply an OU model globally with default grid (50 points)
+#' my_tree <- evo_model(my_tree, "OU")
+#'
+#' # Increase grid resolution for better precision
+#' my_tree <- evo_model(my_tree, "OU", n_alpha = 100)
+#'
+#' # Apply BM to TraitA and OU to TraitB
+#' my_tree <- evo_model(my_tree, c(TraitA = "BM", TraitB = "OU"))
+#' }
+evo_model <- function(tree, model = "BM", n_alpha = 50) {
+    if (!inherits(tree, "phylo") && !inherits(tree, "multiPhylo")) {
+        stop("'tree' must be a phylo or multiPhylo object.")
+    }
+
+    # Validate models
+    valid_models <- c("BM", "OU")
+    if (any(!model %in% valid_models)) {
+        stop(sprintf(
+            "Invalid evolutionary model(s). Valid options: %s",
+            paste(valid_models, collapse = ", ")
+        ))
+    }
+
+    attr(tree, "evo_model") <- model
+    attr(tree, "n_alpha") <- n_alpha
+    return(tree)
+}
+
 #' JAGS Structure Definition for Phylogenetic Trees
 #'
 #' Implements the `jags_structure_definition` S3 method for `phylo` objects.
@@ -21,24 +68,106 @@ jags_structure_definition.phylo <- function(
     precision_parameter = "lambda",
     ...
 ) {
+    evo_model <- attr(structure, "evo_model")
+    cat(
+        "DEBUG TOP LEVEL jags_struct_phylo: variable_name =",
+        variable_name,
+        " | evo_model =",
+        paste(evo_model, collapse = " "),
+        "\n"
+    )
+    has_ou <- FALSE
+    if (!is.null(evo_model)) {
+        has_ou <- "OU" %in% evo_model
+    }
+
     if (optimize) {
-        # Optimized: Use pre-calculated precision matrix (Prec_phylo)
+        # Optimized: Use pre-calculated precision matrix
         setup_code <- c(
             "    # Phylogenetic precision matrix (pre-calculated)"
         )
 
-        error_prior <- paste0(
-            "    ",
-            precision_parameter,
-            " ~ dgamma(0.001, 0.001)\n",
-            "    ",
-            variable_name,
-            "[1:N] ~ dmnorm(zeros[1:N], ",
-            precision_parameter,
-            " * Prec_phylo[1:N, 1:N])"
-        )
+        if (variable_name == "err" && has_ou) {
+            # Global setup block
+            setup_code <- c(
+                setup_code,
+                "    for(k in 1:N_alpha) {",
+                "        prior_alpha_probs[k] <- 1 / N_alpha",
+                "    }"
+            )
+        }
 
-        return(list(setup_code = setup_code, error_prior = error_prior))
+        # Check if called for a specific variable
+        is_ou <- FALSE
+        if (variable_name != "err" && !is.null(evo_model)) {
+            # Extract response name, e.g. "u_std_Y_OU_phylo" -> "Y_OU"
+            var_base <- sub("^u_std_(.*)_phylo$", "\\1", variable_name)
+            var_base <- sub("^u_(.*)_phylo$", "\\1", var_base)
+
+            cat(
+                "DEBUG: variable_name =",
+                variable_name,
+                "| var_base =",
+                var_base,
+                "\n"
+            )
+
+            if (length(evo_model) == 1 && is.null(names(evo_model))) {
+                is_ou <- (evo_model == "OU")
+            } else if (var_base %in% names(evo_model)) {
+                is_ou <- (evo_model[var_base] == "OU")
+            }
+        }
+
+        if (is_ou) {
+            var_base <- sub("^u_std_(.*)_phylo$", "\\1", variable_name)
+            var_base <- sub("^u_(.*)_phylo$", "\\1", var_base)
+            setup_code <- c(
+                setup_code,
+                sprintf("    # Ornstein-Uhlenbeck parameter for %s", var_base),
+                sprintf("    idx_alpha_%s ~ dcat(prior_alpha_probs)", var_base),
+                sprintf(
+                    "    ou_alpha_%s <- alpha_vals[idx_alpha_%s]",
+                    var_base,
+                    var_base
+                )
+            )
+            error_prior <- paste0(
+                "    ",
+                precision_parameter,
+                " ~ dgamma(0.001, 0.001)\n",
+                "    ",
+                variable_name,
+                "[1:N] ~ dmnorm(zeros[1:N], ",
+                precision_parameter,
+                " * Prec_phylo_OU[1:N, 1:N, idx_alpha_",
+                var_base,
+                "])"
+            )
+            prec_index <- paste0(
+                "Prec_phylo_OU[1:N, 1:N, idx_alpha_",
+                var_base,
+                "]"
+            )
+        } else {
+            error_prior <- paste0(
+                "    ",
+                precision_parameter,
+                " ~ dgamma(0.001, 0.001)\n",
+                "    ",
+                variable_name,
+                "[1:N] ~ dmnorm(zeros[1:N], ",
+                precision_parameter,
+                " * Prec_phylo[1:N, 1:N])"
+            )
+            prec_index <- NULL
+        }
+
+        return(list(
+            setup_code = setup_code,
+            error_prior = error_prior,
+            prec_index = prec_index
+        ))
     } else {
         # Unoptimized: Invert VCV in JAGS
         setup_code <- c(
@@ -102,12 +231,14 @@ prepare_structure_data.phylo <- function(
     vcv_mat <- ape::vcv(phylo_tree)
 
     # 3. Check dimensions against data
-    N <- nrow(data)
+    N <- nrow(vcv_mat)
 
     data_list <- list()
 
+    evo_model <- attr(structure, "evo_model")
+    has_ou <- "OU" %in% evo_model
+
     if (optimize) {
-        # Return Precision Matrix P = inv(V)
         if (!quiet) {
             message(
                 "Calculating phylogenetic precision matrix (optimize=TRUE)..."
@@ -115,6 +246,40 @@ prepare_structure_data.phylo <- function(
         }
         P <- solve(vcv_mat)
         data_list[["Prec_phylo"]] <- P
+
+        if (has_ou) {
+            if (!quiet) {
+                message("Calculating phylogenetic OU precision grid...")
+            }
+            D <- ape::cophenetic.phylo(phylo_tree)
+            N_alpha <- attr(structure, "n_alpha")
+            if (is.null(N_alpha)) {
+                N_alpha <- 50
+            }
+            # From large alpha (fast evolution / little correlation) to small alpha (BM)
+            # Log-spaced grid
+            alpha_vals <- exp(seq(log(0.001), log(10), length.out = N_alpha))
+
+            Prec_phylo_OU <- array(NA, dim = c(N, N, N_alpha))
+            for (k in 1:N_alpha) {
+                alpha <- alpha_vals[k]
+                if (alpha < 1e-5) {
+                    V <- vcv_mat
+                } else {
+                    V <- exp(-alpha * D) *
+                        (1 - exp(-2 * alpha * vcv_mat)) /
+                        (2 * alpha)
+                }
+
+                # Small ridge for numerical stability
+                diag(V) <- diag(V) + 1e-6
+                Prec_phylo_OU[,, k] <- solve(V)
+            }
+
+            data_list[["Prec_phylo_OU"]] <- Prec_phylo_OU
+            data_list[["N_alpha"]] <- N_alpha
+            data_list[["alpha_vals"]] <- alpha_vals
+        }
     } else {
         # Return VCV
         data_list[["VCV"]] <- vcv_mat
