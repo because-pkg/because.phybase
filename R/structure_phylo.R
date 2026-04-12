@@ -65,7 +65,6 @@ jags_structure_definition.phylo <- function(
     structure,
     variable_name = "err",
     optimize = TRUE,
-    precision_parameter = "lambda",
     ...
 ) {
     args <- list(...)
@@ -75,6 +74,15 @@ jags_structure_definition.phylo <- function(
     if (is.null(zeros_name)) zeros_name <- "zeros"
     i_index <- args$i_index
     if (is.null(i_index)) i_index <- "i"
+    s_name <- args$s_name
+    if (is.null(s_name)) s_name <- "phylo"
+
+    # Unique parameter naming to avoid JAGS collisions
+    prec_param <- args$precision_parameter
+    if (is.null(prec_param)) {
+        prec_param <- paste0("lambda_", s_name, "_", variable_name)
+    }
+    sig_param <- sub("lambda_", "sigma_", prec_param)
 
     evo_model <- attr(structure, "evo_model")
     has_ou <- FALSE
@@ -127,12 +135,17 @@ jags_structure_definition.phylo <- function(
             )
             model_lines <- paste0(
                 "    ",
-                precision_parameter,
+                prec_param,
                 " ~ dgamma(0.001, 0.001)\n",
+                "    ",
+                sig_param,
+                " <- 1/sqrt(",
+                prec_param,
+                ")\n",
                 "    ",
                 variable_name,
                 "[1:", loop_bound, "] ~ dmnorm(", zeros_name, "[1:", loop_bound, "], ",
-                precision_parameter,
+                prec_param,
                 " * Prec_phylo_OU[1:", loop_bound, ", 1:", loop_bound, ", idx_alpha_",
                 var_base,
                 "])"
@@ -145,12 +158,17 @@ jags_structure_definition.phylo <- function(
         } else {
             model_lines <- paste0(
                 "    ",
-                precision_parameter,
+                prec_param,
                 " ~ dgamma(0.001, 0.001)\n",
+                "    ",
+                sig_param,
+                " <- 1/sqrt(",
+                prec_param,
+                ")\n",
                 "    ",
                 variable_name,
                 "[1:", loop_bound, "] ~ dmnorm(", zeros_name, "[1:", loop_bound, "], ",
-                precision_parameter,
+                prec_param,
                 " * Prec_phylo[1:", loop_bound, ", 1:", loop_bound, "])"
             )
             prec_index <- NULL
@@ -174,12 +192,17 @@ jags_structure_definition.phylo <- function(
 
         model_lines <- paste0(
             "    ",
-            precision_parameter,
+            prec_param,
             " ~ dgamma(0.001, 0.001)\n",
+            "    ",
+            sig_param,
+            " <- 1/sqrt(",
+            prec_param,
+            ")\n",
             "    ",
             variable_name,
             "[1:", loop_bound, "] ~ dmnorm(", zeros_name, "[1:", loop_bound, "], ",
-            precision_parameter,
+            prec_param,
             " * Sigma_phylo[1:", loop_bound, ", 1:", loop_bound, "])"
         )
 
