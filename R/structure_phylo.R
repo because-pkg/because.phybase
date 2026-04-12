@@ -69,13 +69,6 @@ jags_structure_definition.phylo <- function(
     ...
 ) {
     evo_model <- attr(structure, "evo_model")
-    cat(
-        "DEBUG TOP LEVEL jags_struct_phylo: variable_name =",
-        variable_name,
-        " | evo_model =",
-        paste(evo_model, collapse = " "),
-        "\n"
-    )
     has_ou <- FALSE
     if (!is.null(evo_model)) {
         has_ou <- "OU" %in% evo_model
