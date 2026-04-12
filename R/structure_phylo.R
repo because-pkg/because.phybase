@@ -86,6 +86,7 @@ jags_structure_definition.phylo <- function(
         prec_param <- paste0("lambda_", s_name, "_", variable_name)
     }
     sig_param <- sub("lambda_", "sigma_", prec_param)
+    scaled_prec_name <- paste0("scaled_prec_", s_name, "_", variable_name)
 
     evo_model <- attr(structure, "evo_model")
     has_ou <- FALSE
@@ -146,12 +147,24 @@ jags_structure_definition.phylo <- function(
                 prec_param,
                 ")\n",
                 "    ",
+                scaled_prec_name,
+                "[1:",
+                loop_bound,
+                ", 1:",
+                loop_bound,
+                "] <- ",
+                prec_param,
+                " * Prec_phylo_OU[1:",
+                loop_bound,
+                ", 1:",
+                loop_bound,
+                ", idx_alpha_",
+                var_base,
+                "]\n",
+                "    ",
                 err_var,
                 "[1:", loop_bound, "] ~ dmnorm(", zeros_name, "[1:", loop_bound, "], ",
-                prec_param,
-                " * Prec_phylo_OU[1:", loop_bound, ", 1:", loop_bound, ", idx_alpha_",
-                var_base,
-                "])"
+                scaled_prec_name, "[1:", loop_bound, ", 1:", loop_bound, "])"
             )
             prec_index <- paste0(
                 "Prec_phylo_OU[1:", loop_bound, ", 1:", loop_bound, ", idx_alpha_",
@@ -169,10 +182,22 @@ jags_structure_definition.phylo <- function(
                 prec_param,
                 ")\n",
                 "    ",
+                scaled_prec_name,
+                "[1:",
+                loop_bound,
+                ", 1:",
+                loop_bound,
+                "] <- ",
+                prec_param,
+                " * Prec_phylo[1:",
+                loop_bound,
+                ", 1:",
+                loop_bound,
+                "]\n",
+                "    ",
                 err_var,
                 "[1:", loop_bound, "] ~ dmnorm(", zeros_name, "[1:", loop_bound, "], ",
-                prec_param,
-                " * Prec_phylo[1:", loop_bound, ", 1:", loop_bound, "])"
+                scaled_prec_name, "[1:", loop_bound, ", 1:", loop_bound, "])"
             )
             prec_index <- NULL
         }
@@ -203,10 +228,22 @@ jags_structure_definition.phylo <- function(
             prec_param,
             ")\n",
             "    ",
+            scaled_prec_name,
+            "[1:",
+            loop_bound,
+            ", 1:",
+            loop_bound,
+            "] <- ",
+            prec_param,
+            " * Sigma_phylo[1:",
+            loop_bound,
+            ", 1:",
+            loop_bound,
+            "]\n",
+            "    ",
             err_var,
             "[1:", loop_bound, "] ~ dmnorm(", zeros_name, "[1:", loop_bound, "], ",
-            prec_param,
-            " * Sigma_phylo[1:", loop_bound, ", 1:", loop_bound, "])"
+            scaled_prec_name, "[1:", loop_bound, ", 1:", loop_bound, "])"
         )
 
         term_str <- paste0(err_var, "[", i_index, "]")
