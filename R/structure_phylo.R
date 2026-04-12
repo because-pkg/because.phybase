@@ -77,6 +77,9 @@ jags_structure_definition.phylo <- function(
     s_name <- args$s_name
     if (is.null(s_name)) s_name <- "phylo"
 
+    # Unique random effect node name to avoid collision with response variable
+    err_var <- paste0("err_", s_name, "_", variable_name)
+
     # Unique parameter naming to avoid JAGS collisions
     prec_param <- args$precision_parameter
     if (is.null(prec_param)) {
@@ -143,7 +146,7 @@ jags_structure_definition.phylo <- function(
                 prec_param,
                 ")\n",
                 "    ",
-                variable_name,
+                err_var,
                 "[1:", loop_bound, "] ~ dmnorm(", zeros_name, "[1:", loop_bound, "], ",
                 prec_param,
                 " * Prec_phylo_OU[1:", loop_bound, ", 1:", loop_bound, ", idx_alpha_",
@@ -166,7 +169,7 @@ jags_structure_definition.phylo <- function(
                 prec_param,
                 ")\n",
                 "    ",
-                variable_name,
+                err_var,
                 "[1:", loop_bound, "] ~ dmnorm(", zeros_name, "[1:", loop_bound, "], ",
                 prec_param,
                 " * Prec_phylo[1:", loop_bound, ", 1:", loop_bound, "])"
@@ -174,7 +177,7 @@ jags_structure_definition.phylo <- function(
             prec_index <- NULL
         }
 
-        term_str <- paste0(variable_name, "[", i_index, "]")
+        term_str <- paste0(err_var, "[", i_index, "]")
 
         return(list(
             setup_code = setup_code,
@@ -200,13 +203,13 @@ jags_structure_definition.phylo <- function(
             prec_param,
             ")\n",
             "    ",
-            variable_name,
+            err_var,
             "[1:", loop_bound, "] ~ dmnorm(", zeros_name, "[1:", loop_bound, "], ",
             prec_param,
             " * Sigma_phylo[1:", loop_bound, ", 1:", loop_bound, "])"
         )
 
-        term_str <- paste0(variable_name, "[", i_index, "]")
+        term_str <- paste0(err_var, "[", i_index, "]")
 
         return(list(setup_code = setup_code, model_lines = model_lines, term = term_str))
     }
