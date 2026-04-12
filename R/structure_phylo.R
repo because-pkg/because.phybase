@@ -68,6 +68,14 @@ jags_structure_definition.phylo <- function(
     precision_parameter = "lambda",
     ...
 ) {
+    args <- list(...)
+    loop_bound <- args$loop_bound
+    if (is.null(loop_bound)) loop_bound <- "N"
+    zeros_name <- args$zeros_name
+    if (is.null(zeros_name)) zeros_name <- "zeros"
+    i_index <- args$i_index
+    if (is.null(i_index)) i_index <- "i"
+
     evo_model <- attr(structure, "evo_model")
     has_ou <- FALSE
     if (!is.null(evo_model)) {
@@ -97,14 +105,6 @@ jags_structure_definition.phylo <- function(
             var_base <- sub("^u_std_(.*)_phylo$", "\\1", variable_name)
             var_base <- sub("^u_(.*)_phylo$", "\\1", var_base)
 
-            cat(
-                "DEBUG: variable_name =",
-                variable_name,
-                "| var_base =",
-                var_base,
-                "\n"
-            )
-
             if (length(evo_model) == 1 && is.null(names(evo_model))) {
                 is_ou <- (evo_model == "OU")
             } else if (var_base %in% names(evo_model)) {
@@ -125,40 +125,43 @@ jags_structure_definition.phylo <- function(
                     var_base
                 )
             )
-            error_prior <- paste0(
+            model_lines <- paste0(
                 "    ",
                 precision_parameter,
                 " ~ dgamma(0.001, 0.001)\n",
                 "    ",
                 variable_name,
-                "[1:N] ~ dmnorm(zeros[1:N], ",
+                "[1:", loop_bound, "] ~ dmnorm(", zeros_name, "[1:", loop_bound, "], ",
                 precision_parameter,
-                " * Prec_phylo_OU[1:N, 1:N, idx_alpha_",
+                " * Prec_phylo_OU[1:", loop_bound, ", 1:", loop_bound, ", idx_alpha_",
                 var_base,
                 "])"
             )
             prec_index <- paste0(
-                "Prec_phylo_OU[1:N, 1:N, idx_alpha_",
+                "Prec_phylo_OU[1:", loop_bound, ", 1:", loop_bound, ", idx_alpha_",
                 var_base,
                 "]"
             )
         } else {
-            error_prior <- paste0(
+            model_lines <- paste0(
                 "    ",
                 precision_parameter,
                 " ~ dgamma(0.001, 0.001)\n",
                 "    ",
                 variable_name,
-                "[1:N] ~ dmnorm(zeros[1:N], ",
+                "[1:", loop_bound, "] ~ dmnorm(", zeros_name, "[1:", loop_bound, "], ",
                 precision_parameter,
-                " * Prec_phylo[1:N, 1:N])"
+                " * Prec_phylo[1:", loop_bound, ", 1:", loop_bound, "])"
             )
             prec_index <- NULL
         }
 
+        term_str <- paste0(variable_name, "[", i_index, "]")
+
         return(list(
             setup_code = setup_code,
-            error_prior = error_prior,
+            model_lines = model_lines,
+            term = term_str,
             prec_index = prec_index
         ))
     } else {
@@ -166,21 +169,23 @@ jags_structure_definition.phylo <- function(
         setup_code <- c(
             "    # Phylogenetic VCV setup (Marginal / Unoptimized)",
             "    # Invert VCV to get base precision matrix",
-            "    Sigma_phylo[1:N, 1:N] <- inverse(VCV[1:N, 1:N])"
+            "    Sigma_phylo[1:", loop_bound, ", 1:", loop_bound, "] <- inverse(VCV[1:", loop_bound, ", 1:", loop_bound, "])"
         )
 
-        error_prior <- paste0(
+        model_lines <- paste0(
             "    ",
             precision_parameter,
             " ~ dgamma(0.001, 0.001)\n",
             "    ",
             variable_name,
-            "[1:N] ~ dmnorm(zeros[1:N], ",
+            "[1:", loop_bound, "] ~ dmnorm(", zeros_name, "[1:", loop_bound, "], ",
             precision_parameter,
-            " * Sigma_phylo[1:N, 1:N])"
+            " * Sigma_phylo[1:", loop_bound, ", 1:", loop_bound, "])"
         )
 
-        return(list(setup_code = setup_code, error_prior = error_prior))
+        term_str <- paste0(variable_name, "[", i_index, "]")
+
+        return(list(setup_code = setup_code, model_lines = model_lines, term = term_str))
     }
 }
 
