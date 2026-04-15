@@ -78,18 +78,18 @@ jags_structure_definition.phylo <- function(
     if (is.null(s_name)) s_name <- "phylo"
 
     # Unique random effect node name to avoid collision with response variable
-    err_var <- paste0("err_", s_name, "_", variable_name)
+    err_var <- paste0("err_", variable_name, "_", s_name)
 
-    # Unique parameter naming to avoid JAGS collisions
+    # Unique parameter naming to avoid JAGS collisions - UNIFIED Variable_Structure naming
     prec_param <- args$precision_parameter
     if (is.null(prec_param)) {
-        prec_param <- paste0("lambda_", s_name, "_", variable_name)
+        prec_param <- paste0("lambda_", variable_name, "_", s_name)
     }
     sig_param <- sub("lambda_", "sigma_", prec_param)
-    raw_var <- paste0("err_raw_", s_name, "_", variable_name)
+    raw_var <- paste0("err_raw_", variable_name, "_", s_name)
 
     # Unique loop variable for this structure and response
-    j_idx <- paste0("j_", s_name, "_", variable_name)
+    j_idx <- paste0("j_", variable_name, "_", s_name)
 
     evo_model <- attr(structure, "evo_model")
     has_ou <- FALSE
@@ -141,8 +141,6 @@ jags_structure_definition.phylo <- function(
                 )
             )
             model_lines <- paste0(
-                "    ", prec_param, " ~ dgamma(0.001, 0.001)\n",
-                "    ", sig_param, " <- 1/sqrt(", prec_param, ")\n",
                 "    ", raw_var, "[1:", loop_bound, "] ~ dmnorm(", zeros_name, "[1:", loop_bound, "], ",
                 "Prec_phylo_OU[1:", loop_bound, ", 1:", loop_bound, ", idx_alpha_", var_base, "])\n",
                 "    for(", j_idx, " in 1:", loop_bound, ") {\n",
@@ -156,8 +154,6 @@ jags_structure_definition.phylo <- function(
             )
         } else {
             model_lines <- paste0(
-                "    ", prec_param, " ~ dgamma(0.001, 0.001)\n",
-                "    ", sig_param, " <- 1/sqrt(", prec_param, ")\n",
                 "    ", raw_var, "[1:", loop_bound, "] ~ dmnorm(", zeros_name, "[1:", loop_bound, "], ",
                 "Prec_phylo[1:", loop_bound, ", 1:", loop_bound, "])\n",
                 "    for(", j_idx, " in 1:", loop_bound, ") {\n",
@@ -184,8 +180,6 @@ jags_structure_definition.phylo <- function(
         )
 
         model_lines <- paste0(
-            "    ", prec_param, " ~ dgamma(0.001, 0.001)\n",
-            "    ", sig_param, " <- 1/sqrt(", prec_param, ")\n",
             "    ", raw_var, "[1:", loop_bound, "] ~ dmnorm(", zeros_name, "[1:", loop_bound, "], ",
             "Sigma_phylo[1:", loop_bound, ", 1:", loop_bound, "])\n",
             "    for(", j_idx, " in 1:", loop_bound, ") {\n",
@@ -329,7 +323,7 @@ jags_structure_definition.multiPhylo <- function(
         error_prior <- paste0(
             "    ",
             precision_parameter,
-            " ~ dgamma(0.001, 0.001)\n",
+            " ~ dgamma(10, 10)\n",
             "    ",
             variable_name,
             "[1:N] ~ dmnorm(zeros[1:N], ",
@@ -347,7 +341,7 @@ jags_structure_definition.multiPhylo <- function(
         error_prior <- paste0(
             "    ",
             precision_parameter,
-            " ~ dgamma(0.001, 0.001)\n",
+            " ~ dgamma(10, 10)\n",
             "    ",
             variable_name,
             "[1:N] ~ dmnorm(zeros[1:N], ",
