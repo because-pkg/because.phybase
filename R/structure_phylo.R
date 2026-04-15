@@ -80,11 +80,11 @@ jags_structure_definition.phylo <- function(
     # Unique random effect node name to avoid collision with response variable
     err_var <- paste0("err_", variable_name, "_", s_name)
 
-    # Unique parameter naming to avoid JAGS collisions - UNIFIED Variable_Structure naming
+    # Unique parameter naming to avoid JAGS collisions - UNIFIED naming: tau_u_Structure_Variable
     prec_param <- args$precision_parameter
     if (is.null(prec_param)) {
-        # [UNIFICATION] Match core engine convention: tau_u_{Variable}_{Structure}
-        prec_param <- paste0("tau_u_", variable_name, "_", s_name)
+        # [UNIFICATION] Modern naming: tau_u_phylo_Variable
+        prec_param <- paste0("tau_u_", s_name, "_", variable_name)
     }
     sig_param <- sub("tau_u_", "sigma_", prec_param)
     raw_var <- paste0("err_raw_", variable_name, "_", s_name)
@@ -155,10 +155,11 @@ jags_structure_definition.phylo <- function(
             )
         } else {
             model_lines <- paste0(
+                "    ", prec_param, " ~ dgamma(10, 10)\n",
                 "    ", raw_var, "[1:", loop_bound, "] ~ dmnorm(", zeros_name, "[1:", loop_bound, "], ",
                 "Prec_phylo[1:", loop_bound, ", 1:", loop_bound, "])\n",
                 "    for(", j_idx, " in 1:", loop_bound, ") {\n",
-                "        ", err_var, "[", j_idx, "] <- ", raw_var, "[", j_idx, "] * ", sig_param, "\n",
+                "        ", err_var, "[", j_idx, "] <- ", raw_var, "[", j_idx, "] * (1/sqrt(", prec_param, "))\n",
                 "    }"
             )
             prec_index <- NULL
