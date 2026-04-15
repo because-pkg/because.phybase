@@ -83,9 +83,10 @@ jags_structure_definition.phylo <- function(
     # Unique parameter naming to avoid JAGS collisions - UNIFIED Variable_Structure naming
     prec_param <- args$precision_parameter
     if (is.null(prec_param)) {
-        prec_param <- paste0("lambda_", variable_name, "_", s_name)
+        # [UNIFICATION] Match core engine convention: tau_u_{Variable}_{Structure}
+        prec_param <- paste0("tau_u_", variable_name, "_", s_name)
     }
-    sig_param <- sub("lambda_", "sigma_", prec_param)
+    sig_param <- sub("tau_u_", "sigma_", prec_param)
     raw_var <- paste0("err_raw_", variable_name, "_", s_name)
 
     # Unique loop variable for this structure and response
