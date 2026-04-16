@@ -98,6 +98,8 @@ jags_structure_definition.phylo <- function(
         has_ou <- "OU" %in% evo_model
     }
 
+    use_partitioning <- isTRUE(args$use_partitioning)
+
     if (optimize) {
         # Optimized: Use pre-calculated precision matrix
         setup_code <- c(
@@ -154,14 +156,31 @@ jags_structure_definition.phylo <- function(
                 "]"
             )
         } else {
-            model_lines <- paste0(
-                "    ", prec_param, " ~ dgamma(10, 10)\n",
-                "    ", raw_var, "[1:", loop_bound, "] ~ dmnorm(", zeros_name, "[1:", loop_bound, "], ",
-                "Prec_phylo[1:", loop_bound, ", 1:", loop_bound, "])\n",
-                "    for(", j_idx, " in 1:", loop_bound, ") {\n",
-                "        ", err_var, "[", j_idx, "] <- ", raw_var, "[", j_idx, "] * (1/sqrt(", prec_param, "))\n",
-                "    }"
-            )
+            if (use_partitioning) {
+                # [PARTITIONING] Pagel's Lambda logic
+                # The Core (because_model.R) now generates the priors for lambda and tau_total
+                # to coordinate partitioning across noise terms.
+                # We just generate the dmnorm and the deterministic scaling.
+                model_lines <- paste0(
+                    "    # Pagel's Lambda Partitioning (Scaling only) for ", variable_name, " and phylogeny\n",
+                    "    ", raw_var, "[1:", loop_bound, "] ~ dmnorm(", zeros_name, "[1:", loop_bound, "], ",
+                    "Prec_phylo[1:", loop_bound, ", 1:", loop_bound, "])\n",
+                    "    for(", j_idx, " in 1:", loop_bound, ") {\n",
+                    "        # Scaled by (1/sqrt(tau_u)) where tau_u is defined by Core partitioning\n",
+                    "        ", err_var, "[", j_idx, "] <- ", raw_var, "[", j_idx, "] * (1/sqrt(", prec_param, "))\n",
+                    "    }"
+                )
+            } else {
+                # [ADDITIVE] Standard legacy random effect prior
+                model_lines <- paste0(
+                    "    ", prec_param, " ~ dgamma(10, 10)\n",
+                    "    ", raw_var, "[1:", loop_bound, "] ~ dmnorm(", zeros_name, "[1:", loop_bound, "], ",
+                    "Prec_phylo[1:", loop_bound, ", 1:", loop_bound, "])\n",
+                    "    for(", j_idx, " in 1:", loop_bound, ") {\n",
+                    "        ", err_var, "[", j_idx, "] <- ", raw_var, "[", j_idx, "] * (1/sqrt(", prec_param, "))\n",
+                    "    }"
+                )
+            }
             prec_index <- NULL
         }
 
@@ -171,8 +190,11 @@ jags_structure_definition.phylo <- function(
             setup_code = setup_code,
             model_lines = model_lines,
             term = term_str,
-            prec_index = prec_index
+            prec_index = prec_index,
+            partition_handled = use_partitioning,
+            variable_name = variable_name
         ))
+
     } else {
         # Unoptimized: Invert VCV in JAGS
         setup_code <- c(
