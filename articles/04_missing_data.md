@@ -17,6 +17,7 @@ the node as a response variable to enable phylogenetic imputation.
 First, let’s load the package and the standard `rhino` dataset.
 
 ``` r
+
 library(because.phybase)
 data(rhino.dat)
 data(rhino.tree)
@@ -30,6 +31,7 @@ demonstrate how `because` handles them. We’ll add missingness to: \*
 Mass): A parent-only variable.
 
 ``` r
+
 # Create a copy of the data
 rhino_na <- rhino.dat
 
@@ -56,6 +58,7 @@ We define the same structural equation model (sem8) as in the previous
 affects Dispersal Distance (`DD`).
 
 ``` r
+
 sem8.eq <- list(
   LS ~ BM,
   NL ~ BM + RS,
@@ -65,11 +68,13 @@ sem8.eq <- list(
 
 ## Running the Model
 
-When we run [`because()`](https://rdrr.io/pkg/because/man/because.html)
+When we run
+[`because()`](https://because-pkg.github.io/because/reference/because.html)
 with missing data, it automatically detects the `NA` values and adjusts
 the JAGS model structure.
 
 ``` r
+
 sem8_na.bc <- because(
   equations = sem8.eq,
   data = rhino_na,
@@ -150,15 +155,16 @@ You will notice two important messages if you run the above model:
 Since the missing values are now parameters in the model, we can
 actually inspect their estimated values (posterior distributions). To do
 this, you must run
-[`because()`](https://rdrr.io/pkg/because/man/because.html) with the
-argument `monitor = "all"`. This ensures that the imputed stochastic
-nodes are saved in the output.
+[`because()`](https://because-pkg.github.io/because/reference/because.html)
+with the argument `monitor = "all"`. This ensures that the imputed
+stochastic nodes are saved in the output.
 
 You can use the helper function
-[`extract_imputed()`](https://rdrr.io/pkg/because/man/extract_imputed.html)
+[`extract_imputed()`](https://because-pkg.github.io/because/reference/extract_imputed.html)
 to easily retrieve these values:
 
 ``` r
+
 # Run strictly monitoring 'all' parameters to get imputed values
 sem8_na_monitored.bc <- because(
   equations = sem8.eq,

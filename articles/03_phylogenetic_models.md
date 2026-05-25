@@ -14,6 +14,7 @@ Hardenberg and Gonzalez-Voyer (2025). Let’s start by loading the
 necessary packages and data:
 
 ``` r
+
 library(because.phybase) #the main `because` package will be loaded automatically 
 
 data(rhino.dat)
@@ -28,15 +29,16 @@ automatically matches the species names in the data and tree: you only
 need to ensure that the species names in the data frame column specified
 by `species` match the tip labels in the tree and provide the name of
 the species column to the
-[`because()`](https://rdrr.io/pkg/because/man/because.html) function
-through the `id_col` argument. Also, you do not need to rescale the
-total tree length to 1 (needed for a correct estimation of Pagel’s
+[`because()`](https://because-pkg.github.io/because/reference/because.html)
+function through the `id_col` argument. Also, you do not need to rescale
+the total tree length to 1 (needed for a correct estimation of Pagel’s
 lambda parameter), as `because` will handle this internally.
 
 So, let’s specify the structural equations of the best model (sem8) as
 fitted by von Hardenberg and Gonzalez-Voyer (2025):
 
 ``` r
+
 sem8_eq <- list(
     LS ~ BM,
     NL ~ BM + RS,
@@ -49,14 +51,15 @@ plot_dag(sem8_eq)
 ![](figures/sem8.png)
 
 Now we can fit the model with
-[`because()`](https://rdrr.io/pkg/because/man/because.html) including
-the phylogenetic tree with the `structure` argument. Also, as this is a
-more complex model than in the previous examples, to speed up the model
-fitting we will run 3 chains in parallel using the `parallel = TRUE` and
-`n.cores = 3` arguments. Also we will request the WAIC information
-criterion to be computed by setting `WAIC = TRUE`:
+[`because()`](https://because-pkg.github.io/because/reference/because.html)
+including the phylogenetic tree with the `structure` argument. Also, as
+this is a more complex model than in the previous examples, to speed up
+the model fitting we will run 3 chains in parallel using the
+`parallel = TRUE` and `n.cores = 3` arguments. Also we will request the
+WAIC information criterion to be computed by setting `WAIC = TRUE`:
 
 ``` r
+
 fit_sem8 <- because(
     equations = sem8_eq,
     data = rhino.dat,
@@ -128,36 +131,40 @@ materials of the paper).
 ### The random effects formulation of because
 
 If you are familiar with the output obtained from that model, you may
-however have noticed that besides Pagel’s $\lambda$ parameters for each
-response variable, with
-[`because()`](https://rdrr.io/pkg/because/man/because.html) we also get
-estimates of the standard deviations of the phylogenetic and residual
-components (`sigma_[RESP]_phylo` and `sigma_[RESP]_res`, respectively).
-These are estimated because `because` uses an optimised random effect
-formulation to improve MCMC and significantly reduce runtime. While
-standard phylogenetic models must invert the covariance matrix at every
-iteration (as $\lambda$ changes), the random effect approach is
-mathematically equivalent but computationally more efficent. `because`
-decomposes the response into three additive components:
+however have noticed that besides Pagel’s $`\lambda`$ parameters for
+each response variable, with
+[`because()`](https://because-pkg.github.io/because/reference/because.html)
+we also get estimates of the standard deviations of the phylogenetic and
+residual components (`sigma_[RESP]_phylo` and `sigma_[RESP]_res`,
+respectively). These are estimated because `because` uses an optimised
+random effect formulation to improve MCMC and significantly reduce
+runtime. While standard phylogenetic models must invert the covariance
+matrix at every iteration (as $`\lambda`$ changes), the random effect
+approach is mathematically equivalent but computationally more efficent.
+`because` decomposes the response into three additive components:
 
-$$y_{i} = \mu_{i} + u_{i} + \epsilon_{i}$$
+``` math
+y_i = \mu_i + u_i + \epsilon_i
+```
 
 where:
 
-- $\mu_{i}$ is the fixed effect (structural equation mean)
-- $u_{i}$ is the phylogenetic random effect:
-  $\mathbf{u} \sim \mathcal{N}\left( \mathbf{0},\sigma_{u}^{2}\mathbf{V} \right)$
-- $\epsilon_{i}$ is the residual error:
-  ${\mathbf{ϵ}} \sim \mathcal{N}\left( \mathbf{0},\sigma_{e}^{2}\mathbf{I} \right)$
+- $`\mu_i`$ is the fixed effect (structural equation mean)
+- $`u_i`$ is the phylogenetic random effect:
+  $`\mathbf{u} \sim \mathcal{N}(\mathbf{0}, \sigma_u^2 \mathbf{V})`$
+- $`\epsilon_i`$ is the residual error:
+  $`\boldsymbol{\epsilon} \sim \mathcal{N}(\mathbf{0}, \sigma_e^2 \mathbf{I})`$
 
 This allows us to pre-compute the inverse phylogenetic
-variance-covariance matrix ($\mathbf{V}^{- 1}$) only once and pass it to
-JAGS as fixed data. JAGS simply scales this fixed precision matrix by
-1/$\sigma$, avoiding costly repeated inversions.
+variance-covariance matrix ($`\mathbf{V}^{-1}`$) only once and pass it
+to JAGS as fixed data. JAGS simply scales this fixed precision matrix by
+1/$`\sigma`$, avoiding costly repeated inversions.
 
-Consequently, $\lambda$ is derived from the posterior variance
+Consequently, $`\lambda`$ is derived from the posterior variance
 components as:
-$$\lambda = \frac{\sigma_{phylo}^{2}}{\sigma_{phylo}^{2} + \sigma_{res}^{2}}$$
+``` math
+\lambda = \frac{\sigma_{phylo}^2}{\sigma_{phylo}^2 + \sigma_{res}^2}
+```
 
 This is the approach also used in other packages such as `MCMCglmm`
 (Hadfield, 2010) and `brms` (Bürkner, 2017).
@@ -181,6 +188,7 @@ will set WAIC = FALSE here to speed up the computation, as we do not
 need to compare models):
 
 ``` r
+
 test_sem8_dsep <- because(
     equations = sem8_eq,
     data = rhino.dat,
@@ -235,25 +243,26 @@ that the the hypothesised causal structure is consistent with the data.
 In von Hardenberg and Gonzalez-Voyer (2025), we showed how PhyBaSE
 models can be specified to account for measurement error in the traits.
 These models can also be fitted with
-[`because()`](https://rdrr.io/pkg/because/man/because.html). In the case
-you have available repeated measures per species, it is sufficient to
-provide the data frame with all measurements (i.e. multiple rows per
-species) and specify the `id_col` argument to indicate the species
-identifier column.
-[`because()`](https://rdrr.io/pkg/because/man/because.html) will
-automatically format the data to create a response matrix with species
-in rows and replicates in columns, padding with `NA`s as necessary. We
-will use the same data simulated in von Hardenberg and Gonzalez-Voyer
-(2025) for this example. Each trait was transformed to a distribution
-with mean equal to the original species trait value in `rhino.dat` and
-SD equal to a proportion (25%) of the among-species variance for that
-trait. Then 10 repeated measures were sampled for each species. The
-resulting data frame `RhinoMulti.dat` contains 1000 rows (10 replicates
-for each of the 100 species) and 6 columns (species identifier and 5
-traits). Let’s load the data and fit the same model as before accounting
-for the repeated measures:
+[`because()`](https://because-pkg.github.io/because/reference/because.html).
+In the case you have available repeated measures per species, it is
+sufficient to provide the data frame with all measurements
+(i.e. multiple rows per species) and specify the `id_col` argument to
+indicate the species identifier column.
+[`because()`](https://because-pkg.github.io/because/reference/because.html)
+will automatically format the data to create a response matrix with
+species in rows and replicates in columns, padding with `NA`s as
+necessary. We will use the same data simulated in von Hardenberg and
+Gonzalez-Voyer (2025) for this example. Each trait was transformed to a
+distribution with mean equal to the original species trait value in
+`rhino.dat` and SD equal to a proportion (25%) of the among-species
+variance for that trait. Then 10 repeated measures were sampled for each
+species. The resulting data frame `RhinoMulti.dat` contains 1000 rows
+(10 replicates for each of the 100 species) and 6 columns (species
+identifier and 5 traits). Let’s load the data and fit the same model as
+before accounting for the repeated measures:
 
 ``` r
+
 library(because)
 data(RhinoMulti.dat)
 data(rhino.tree)
@@ -316,11 +325,13 @@ summary(RhinoMulti.bc)
 In von Hardenberg and Gonzalez-Voyer (2025) we showed also how to
 account for measurement error when only a single observation per species
 is available, but the measurement standard error is known. This can also
-be done with [`because()`](https://rdrr.io/pkg/because/man/because.html)
+be done with
+[`because()`](https://because-pkg.github.io/because/reference/because.html)
 by providing for each trait a second collumn called `[TRAIT]_se`
 containing the standard error of the measurements for each species.
 
 ``` r
+
 library(because)
 data(RhinoMulti_se.dat)
 data(rhino.tree)

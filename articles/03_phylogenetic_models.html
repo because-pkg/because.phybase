@@ -12,8 +12,8 @@
 <link rel="icon" sizes="any" href="../favicon.ico">
 <link rel="manifest" href="../site.webmanifest">
 <script src="../lightswitch.js"></script><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
-<script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
+<link href="../deps/bootstrap-5.3.8/bootstrap.min.css" rel="stylesheet">
+<script src="../deps/bootstrap-5.3.8/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><link href="../extra.css" rel="stylesheet">
 <meta property="og:title" content="Phylogenetic Models">
@@ -66,7 +66,7 @@
                         <h4 data-toc-skip class="author">Achaz von
 Hardenberg</h4>
             
-            <h4 data-toc-skip class="date">2026-04-16</h4>
+            <h4 data-toc-skip class="date">2026-05-25</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/because-pkg/because.phybase/blob/main/vignettes/03_phylogenetic_models.Rmd" class="external-link"><code>vignettes/03_phylogenetic_models.Rmd</code></a></small>
       <div class="d-none name"><code>03_phylogenetic_models.Rmd</code></div>
@@ -100,7 +100,7 @@ the phylogenetic tree (class <code>phylo</code>) via the
 automatically matches the species names in the data and tree: you only
 need to ensure that the species names in the data frame column specified
 by <code>species</code> match the tip labels in the tree and provide the
-name of the species column to the <code><a href="https://rdrr.io/pkg/because/man/because.html" class="external-link">because()</a></code> function
+name of the species column to the <code><a href="https://because-pkg.github.io/because/reference/because.html" class="external-link">because()</a></code> function
 through the <code>id_col</code> argument. Also, you do not need to
 rescale the total tree length to 1 (needed for a correct estimation of
 Pagel’s lambda parameter), as <code>because</code> will handle this
@@ -114,9 +114,9 @@ as fitted by von Hardenberg and Gonzalez-Voyer (2025):</p>
 <span>    <span class="va">DD</span> <span class="op">~</span> <span class="va">NL</span></span>
 <span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu"><a href="https://rdrr.io/pkg/because/man/plot_dag.html" class="external-link">plot_dag</a></span><span class="op">(</span><span class="va">sem8_eq</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu"><a href="https://because-pkg.github.io/because/reference/plot_dag.html" class="external-link">plot_dag</a></span><span class="op">(</span><span class="va">sem8_eq</span><span class="op">)</span></span></code></pre></div>
 <p><img src="figures/sem8.png" class="r-plt" alt="" width="100%"></p>
-<p>Now we can fit the model with <code><a href="https://rdrr.io/pkg/because/man/because.html" class="external-link">because()</a></code> including the
+<p>Now we can fit the model with <code><a href="https://because-pkg.github.io/because/reference/because.html" class="external-link">because()</a></code> including the
 phylogenetic tree with the <code>structure</code> argument. Also, as
 this is a more complex model than in the previous examples, to speed up
 the model fitting we will run 3 chains in parallel using the
@@ -124,7 +124,7 @@ the model fitting we will run 3 chains in parallel using the
 Also we will request the WAIC information criterion to be computed by
 setting <code>WAIC = TRUE</code>:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">fit_sem8</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/because/man/because.html" class="external-link">because</a></span><span class="op">(</span></span>
+<code class="sourceCode R"><span><span class="va">fit_sem8</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://because-pkg.github.io/because/reference/because.html" class="external-link">because</a></span><span class="op">(</span></span>
 <span>    equations <span class="op">=</span> <span class="va">sem8_eq</span>,</span>
 <span>    data <span class="op">=</span> <span class="va">rhino.dat</span>,</span>
 <span>    structure <span class="op">=</span> <span class="va">rhino.tree</span>,</span>
@@ -195,7 +195,7 @@ materials of the paper).</p>
 <p>If you are familiar with the output obtained from that model, you may
 however have noticed that besides Pagel’s
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>λ</mi><annotation encoding="application/x-tex">\lambda</annotation></semantics></math>
-parameters for each response variable, with <code><a href="https://rdrr.io/pkg/because/man/because.html" class="external-link">because()</a></code> we
+parameters for each response variable, with <code><a href="https://because-pkg.github.io/because/reference/because.html" class="external-link">because()</a></code> we
 also get estimates of the standard deviations of the phylogenetic and
 residual components (<code>sigma_[RESP]_phylo</code> and
 <code>sigma_[RESP]_res</code>, respectively). These are estimated
@@ -216,17 +216,17 @@ is the fixed effect (structural equation mean)</li>
 <li>
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>u</mi><mi>i</mi></msub><annotation encoding="application/x-tex">u_i</annotation></semantics></math>
 is the phylogenetic random effect:
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>𝐮</mi><mo>∼</mo><mi>𝒩</mi><mrow><mo stretchy="true" form="prefix">(</mo><mn>𝟎</mn><mo>,</mo><msubsup><mi>σ</mi><mi>u</mi><mn>2</mn></msubsup><mi>𝐕</mi><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">\mathbf{u} \sim \mathcal{N}(\mathbf{0}, \sigma_u^2 \mathbf{V})</annotation></semantics></math>
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>𝐮</mi><mo>∼</mo><mi>𝒩</mi><mo stretchy="false" form="prefix">(</mo><mn>𝟎</mn><mo>,</mo><msubsup><mi>σ</mi><mi>u</mi><mn>2</mn></msubsup><mi>𝐕</mi><mo stretchy="false" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">\mathbf{u} \sim \mathcal{N}(\mathbf{0}, \sigma_u^2 \mathbf{V})</annotation></semantics></math>
 </li>
 <li>
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>ϵ</mi><mi>i</mi></msub><annotation encoding="application/x-tex">\epsilon_i</annotation></semantics></math>
 is the residual error:
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>𝛜</mi><mo>∼</mo><mi>𝒩</mi><mrow><mo stretchy="true" form="prefix">(</mo><mn>𝟎</mn><mo>,</mo><msubsup><mi>σ</mi><mi>e</mi><mn>2</mn></msubsup><mi>𝐈</mi><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">\boldsymbol{\epsilon} \sim \mathcal{N}(\mathbf{0}, \sigma_e^2 \mathbf{I})</annotation></semantics></math>
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>𝛜</mi><mo>∼</mo><mi>𝒩</mi><mo stretchy="false" form="prefix">(</mo><mn>𝟎</mn><mo>,</mo><msubsup><mi>σ</mi><mi>e</mi><mn>2</mn></msubsup><mi>𝐈</mi><mo stretchy="false" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">\boldsymbol{\epsilon} \sim \mathcal{N}(\mathbf{0}, \sigma_e^2 \mathbf{I})</annotation></semantics></math>
 </li>
 </ul>
 <p>This allows us to pre-compute the inverse phylogenetic
 variance-covariance matrix
-(<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi>𝐕</mi><mrow><mo>−</mo><mn>1</mn></mrow></msup><annotation encoding="application/x-tex">\mathbf{V}^{-1}</annotation></semantics></math>)
+(<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi>𝐕</mi><mrow><mi>−</mi><mn>1</mn></mrow></msup><annotation encoding="application/x-tex">\mathbf{V}^{-1}</annotation></semantics></math>)
 only once and pass it to JAGS as fixed data. JAGS simply scales this
 fixed precision matrix by
 1/<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>σ</mi><annotation encoding="application/x-tex">\sigma</annotation></semantics></math>,
@@ -259,7 +259,7 @@ more reliable model comparisons.</p>
 (We will set WAIC = FALSE here to speed up the computation, as we do not
 need to compare models):</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">test_sem8_dsep</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/because/man/because.html" class="external-link">because</a></span><span class="op">(</span></span>
+<code class="sourceCode R"><span><span class="va">test_sem8_dsep</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://because-pkg.github.io/because/reference/because.html" class="external-link">because</a></span><span class="op">(</span></span>
 <span>    equations <span class="op">=</span> <span class="va">sem8_eq</span>,</span>
 <span>    data <span class="op">=</span> <span class="va">rhino.dat</span>,</span>
 <span>    structure <span class="op">=</span> <span class="va">rhino.tree</span>,</span>
@@ -312,11 +312,11 @@ data.</p>
 </h3>
 <p>In von Hardenberg and Gonzalez-Voyer (2025), we showed how PhyBaSE
 models can be specified to account for measurement error in the traits.
-These models can also be fitted with <code><a href="https://rdrr.io/pkg/because/man/because.html" class="external-link">because()</a></code>. In the case
+These models can also be fitted with <code><a href="https://because-pkg.github.io/because/reference/because.html" class="external-link">because()</a></code>. In the case
 you have available repeated measures per species, it is sufficient to
 provide the data frame with all measurements (i.e. multiple rows per
 species) and specify the <code>id_col</code> argument to indicate the
-species identifier column. <code><a href="https://rdrr.io/pkg/because/man/because.html" class="external-link">because()</a></code> will automatically
+species identifier column. <code><a href="https://because-pkg.github.io/because/reference/because.html" class="external-link">because()</a></code> will automatically
 format the data to create a response matrix with species in rows and
 replicates in columns, padding with <code>NA</code>s as necessary. We
 will use the same data simulated in von Hardenberg and Gonzalez-Voyer
@@ -330,7 +330,7 @@ of the 100 species) and 6 columns (species identifier and 5 traits).
 Let’s load the data and fit the same model as before accounting for the
 repeated measures:</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://because-pkg.github.io/because/" class="external-link">because</a></span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://because-pkg.github.io" class="external-link">because</a></span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">RhinoMulti.dat</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">rhino.tree</span><span class="op">)</span></span>
 <span></span>
@@ -340,7 +340,7 @@ repeated measures:</p>
 <span>    <span class="va">DD</span> <span class="op">~</span> <span class="va">NL</span></span>
 <span>  <span class="op">)</span></span>
 <span></span>
-<span><span class="va">RhinoMulti.bc</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/because/man/because.html" class="external-link">because</a></span><span class="op">(</span></span>
+<span><span class="va">RhinoMulti.bc</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://because-pkg.github.io/because/reference/because.html" class="external-link">because</a></span><span class="op">(</span></span>
 <span>  equations <span class="op">=</span> <span class="va">RhinoMulti.eq</span>,</span>
 <span>  data <span class="op">=</span> <span class="va">RhinoMulti.dat</span>,</span>
 <span>  structure <span class="op">=</span> <span class="va">rhino.tree</span>,</span>
@@ -390,15 +390,15 @@ repeated measures:</p>
 <p>In von Hardenberg and Gonzalez-Voyer (2025) we showed also how to
 account for measurement error when only a single observation per species
 is available, but the measurement standard error is known. This can also
-be done with <code><a href="https://rdrr.io/pkg/because/man/because.html" class="external-link">because()</a></code> by providing for each trait a second
+be done with <code><a href="https://because-pkg.github.io/because/reference/because.html" class="external-link">because()</a></code> by providing for each trait a second
 collumn called <code>[TRAIT]_se</code> containing the standard error of
 the measurements for each species.</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://because-pkg.github.io/because/" class="external-link">because</a></span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://because-pkg.github.io" class="external-link">because</a></span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">RhinoMulti_se.dat</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">rhino.tree</span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">RhinoMulti_se.bc</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/because/man/because.html" class="external-link">because</a></span><span class="op">(</span></span>
+<span><span class="va">RhinoMulti_se.bc</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://because-pkg.github.io/because/reference/because.html" class="external-link">because</a></span><span class="op">(</span></span>
 <span>  equations <span class="op">=</span> <span class="va">RhinoMulti.eq</span>,</span>
 <span>  data <span class="op">=</span> <span class="va">RhinoMulti_se.dat</span>,</span>
 <span>  structure <span class="op">=</span> <span class="va">rhino.tree</span>,</span>

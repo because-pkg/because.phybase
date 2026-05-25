@@ -12,8 +12,8 @@
 <link rel="icon" sizes="any" href="../favicon.ico">
 <link rel="manifest" href="../site.webmanifest">
 <script src="../lightswitch.js"></script><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
-<script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
+<link href="../deps/bootstrap-5.3.8/bootstrap.min.css" rel="stylesheet">
+<script src="../deps/bootstrap-5.3.8/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><link href="../extra.css" rel="stylesheet">
 <meta property="og:title" content="Phylogenetic Missing Data Imputation">
@@ -66,7 +66,7 @@
                         <h4 data-toc-skip class="author">Achaz von
 Hardenberg</h4>
             
-            <h4 data-toc-skip class="date">2026-04-16</h4>
+            <h4 data-toc-skip class="date">2026-05-25</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/because-pkg/because.phybase/blob/main/vignettes/04_missing_data.Rmd" class="external-link"><code>vignettes/04_missing_data.Rmd</code></a></small>
       <div class="d-none name"><code>04_missing_data.Rmd</code></div>
@@ -139,11 +139,11 @@ Distance (<code>DD</code>).</p>
 <div class="section level2">
 <h2 id="running-the-model">Running the Model<a class="anchor" aria-label="anchor" href="#running-the-model"></a>
 </h2>
-<p>When we run <code><a href="https://rdrr.io/pkg/because/man/because.html" class="external-link">because()</a></code> with missing data, it
+<p>When we run <code><a href="https://because-pkg.github.io/because/reference/because.html" class="external-link">because()</a></code> with missing data, it
 automatically detects the <code>NA</code> values and adjusts the JAGS
 model structure.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">sem8_na.bc</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/because/man/because.html" class="external-link">because</a></span><span class="op">(</span></span>
+<code class="sourceCode R"><span><span class="va">sem8_na.bc</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://because-pkg.github.io/because/reference/because.html" class="external-link">because</a></span><span class="op">(</span></span>
 <span>  equations <span class="op">=</span> <span class="va">sem8.eq</span>,</span>
 <span>  data <span class="op">=</span> <span class="va">rhino_na</span>,</span>
 <span>  structure <span class="op">=</span> <span class="va">rhino.tree</span></span>
@@ -225,14 +225,14 @@ phylogenetic information available.</p></li>
 </h2>
 <p>Since the missing values are now parameters in the model, we can
 actually inspect their estimated values (posterior distributions). To do
-this, you must run <code><a href="https://rdrr.io/pkg/because/man/because.html" class="external-link">because()</a></code> with the argument
+this, you must run <code><a href="https://because-pkg.github.io/because/reference/because.html" class="external-link">because()</a></code> with the argument
 <code>monitor = "all"</code>. This ensures that the imputed stochastic
 nodes are saved in the output.</p>
-<p>You can use the helper function <code><a href="https://rdrr.io/pkg/because/man/extract_imputed.html" class="external-link">extract_imputed()</a></code> to
+<p>You can use the helper function <code><a href="https://because-pkg.github.io/because/reference/extract_imputed.html" class="external-link">extract_imputed()</a></code> to
 easily retrieve these values:</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Run strictly monitoring 'all' parameters to get imputed values</span></span>
-<span><span class="va">sem8_na_monitored.bc</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/because/man/because.html" class="external-link">because</a></span><span class="op">(</span></span>
+<span><span class="va">sem8_na_monitored.bc</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://because-pkg.github.io/because/reference/because.html" class="external-link">because</a></span><span class="op">(</span></span>
 <span>  equations <span class="op">=</span> <span class="va">sem8.eq</span>,</span>
 <span>  data <span class="op">=</span> <span class="va">rhino_na</span>,</span>
 <span>  structure <span class="op">=</span> <span class="va">rhino.tree</span>,</span>
@@ -240,7 +240,7 @@ easily retrieve these values:</p>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Extract posterior summaries for imputed values</span></span>
-<span><span class="va">imputed_values</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/because/man/extract_imputed.html" class="external-link">extract_imputed</a></span><span class="op">(</span><span class="va">sem8_na_monitored.bc</span><span class="op">)</span></span>
+<span><span class="va">imputed_values</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://because-pkg.github.io/because/reference/extract_imputed.html" class="external-link">extract_imputed</a></span><span class="op">(</span><span class="va">sem8_na_monitored.bc</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># View the first few imputed values</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">imputed_values</span><span class="op">)</span></span>

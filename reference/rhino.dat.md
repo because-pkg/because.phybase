@@ -76,13 +76,13 @@ head(rhino.dat)
 #> 5 s5  2.4923437  1.224005  0.60823620  1.6241513  0.2208142
 #> 6 s6  1.4251486  2.969227  3.08553399  2.2524221  2.4268047
 summary(rhino.dat)
-#>       SP                  BM                NL                 LS          
-#>  Length:100         Min.   :-2.3373   Min.   :-2.66773   Min.   :-2.14633  
-#>  Class :character   1st Qu.: 0.4526   1st Qu.: 0.01542   1st Qu.:-0.09736  
-#>  Mode  :character   Median : 1.5854   Median : 1.10201   Median : 1.20535  
-#>                     Mean   : 1.6824   Mean   : 1.05258   Mean   : 1.23445  
-#>                     3rd Qu.: 2.7206   3rd Qu.: 2.14295   3rd Qu.: 2.26928  
-#>                     Max.   : 5.4368   Max.   : 5.02897   Max.   : 5.69822  
+#>          SP            BM                NL                 LS          
+#>  Length   :100   Min.   :-2.3373   Min.   :-2.66773   Min.   :-2.14633  
+#>  N.unique :100   1st Qu.: 0.4526   1st Qu.: 0.01542   1st Qu.:-0.09736  
+#>  N.blank  :  0   Median : 1.5854   Median : 1.10201   Median : 1.20535  
+#>  Min.nchar:  2   Mean   : 1.6824   Mean   : 1.05258   Mean   : 1.23445  
+#>  Max.nchar:  4   3rd Qu.: 2.7206   3rd Qu.: 2.14295   3rd Qu.: 2.26928  
+#>                  Max.   : 5.4368   Max.   : 5.02897   Max.   : 5.69822  
 #>        DD                RS           
 #>  Min.   :-2.9747   Min.   :-3.392697  
 #>  1st Qu.: 0.1442   1st Qu.:-0.001407  

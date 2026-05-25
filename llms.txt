@@ -28,6 +28,7 @@ Gonzalez-Voyer, 2025).
 To install `because.phybase`, run:
 
 ``` r
+
 remotes::install_github("because-pkg/because.phybase")
 ```
 
