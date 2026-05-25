@@ -461,6 +461,7 @@ prepare_structure_data.multiPhylo <- function(
         }
         return(phylo_tree)
     })
+    class(structure) <- "multiPhylo"
 
     # 2. Compute matrices
     # Use first tree to get N
