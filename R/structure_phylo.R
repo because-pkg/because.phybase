@@ -130,6 +130,8 @@ jags_structure_definition.phylo <- function(
             }
         }
 
+        engine <- args$engine %||% "jags"
+
         if (is_ou) {
             var_base <- sub("^u_std_(.*)_phylo$", "\\1", variable_name)
             var_base <- sub("^u_(.*)_phylo$", "\\1", var_base)
@@ -143,6 +145,7 @@ jags_structure_definition.phylo <- function(
                     var_base
                 )
             )
+
             model_lines <- paste0(
                 "    ", raw_var, "[1:", loop_bound, "] ~ dmnorm(", zeros_name, "[1:", loop_bound, "], ",
                 "Prec_phylo_OU[1:", loop_bound, ", 1:", loop_bound, ", idx_alpha_", var_base, "])\n",
@@ -150,6 +153,7 @@ jags_structure_definition.phylo <- function(
                 "        ", err_var, "[", j_idx, "] <- ", raw_var, "[", j_idx, "] * ", sig_param, "\n",
                 "    }"
             )
+
             prec_index <- paste0(
                 "Prec_phylo_OU[1:", loop_bound, ", 1:", loop_bound, ", idx_alpha_",
                 var_base,
@@ -158,9 +162,6 @@ jags_structure_definition.phylo <- function(
         } else {
             if (use_partitioning) {
                 # [PARTITIONING] Pagel's Lambda logic
-                # The Core (because_model.R) now generates the priors for lambda and tau_total
-                # to coordinate partitioning across noise terms.
-                # We just generate the dmnorm and the deterministic scaling.
                 model_lines <- paste0(
                     "    # Pagel's Lambda Partitioning (Scaling only) for ", variable_name, " and phylogeny\n",
                     "    ", raw_var, "[1:", loop_bound, "] ~ dmnorm(", zeros_name, "[1:", loop_bound, "], ",
@@ -335,46 +336,93 @@ jags_structure_definition.multiPhylo <- function(
     structure,
     variable_name = "err",
     optimize = TRUE,
-    precision_parameter = "lambda",
     ...
 ) {
+    args <- list(...)
+    loop_bound <- args$loop_bound
+    if (is.null(loop_bound)) loop_bound <- "N"
+    zeros_name <- args$zeros_name
+    if (is.null(zeros_name)) zeros_name <- "zeros"
+    i_index <- args$i_index
+    if (is.null(i_index)) i_index <- "i"
+    s_name <- args$s_name
+    if (is.null(s_name)) s_name <- "multiPhylo"
+
+    # Unique random effect node name to avoid collision with response variable
+    err_var <- paste0("err_", variable_name, "_", s_name)
+
+    # Unique parameter naming to avoid JAGS collisions
+    prec_param <- args$precision_parameter
+    if (is.null(prec_param)) {
+        prec_param <- paste0("tau_u_", s_name, "_", variable_name)
+    }
+    sig_param <- sub("tau_u_", "sigma_", prec_param)
+    raw_var <- paste0("err_raw_", variable_name, "_", s_name)
+
+    # Unique loop variable for this structure and response
+    j_idx <- paste0("j_", variable_name, "_", s_name)
+
+    use_partitioning <- isTRUE(args$use_partitioning)
+
     if (optimize) {
         setup_code <- c(
             "    # Multi-tree phylogenetic Precision setup",
             "    # Prec_multiPhylo[,,k] is passed as data",
-            "    # We select the k-th precision matrix: Prec_multiPhylo[1:N, 1:N, K]"
+            paste0("    # We select the k-th precision matrix: Prec_multiPhylo[1:", loop_bound, ", 1:", loop_bound, ", K]")
         )
-        error_prior <- paste0(
-            "    ",
-            precision_parameter,
-            " ~ dgamma(10, 10)\n",
-            "    ",
-            variable_name,
-            "[1:N] ~ dmnorm(zeros[1:N], ",
-            precision_parameter,
-            " * Prec_multiPhylo[1:N, 1:N, K])"
-        )
+
+        if (use_partitioning) {
+            model_lines <- paste0(
+                "    # Pagel's Lambda Partitioning (Scaling only) for ", variable_name, " and multiPhylo\n",
+                "    ", raw_var, "[1:", loop_bound, "] ~ dmnorm(", zeros_name, "[1:", loop_bound, "], ",
+                "Prec_multiPhylo[1:", loop_bound, ", 1:", loop_bound, ", K])\n",
+                "    for(", j_idx, " in 1:", loop_bound, ") {\n",
+                "        ", err_var, "[", j_idx, "] <- ", raw_var, "[", j_idx, "] * (1/sqrt(", prec_param, "))\n",
+                "    }"
+            )
+        } else {
+            model_lines <- paste0(
+                "    ", prec_param, " ~ dgamma(10, 10)\n",
+                "    ", raw_var, "[1:", loop_bound, "] ~ dmnorm(", zeros_name, "[1:", loop_bound, "], ",
+                "Prec_multiPhylo[1:", loop_bound, ", 1:", loop_bound, ", K])\n",
+                "    for(", j_idx, " in 1:", loop_bound, ") {\n",
+                "        ", err_var, "[", j_idx, "] <- ", raw_var, "[", j_idx, "] * (1/sqrt(", prec_param, "))\n",
+                "    }"
+            )
+        }
+        prec_index <- paste0("Prec_multiPhylo[1:", loop_bound, ", 1:", loop_bound, ", K]")
+        term_str <- paste0(err_var, "[", i_index, "]")
+
+        return(list(
+            setup_code = setup_code,
+            model_lines = model_lines,
+            term = term_str,
+            prec_index = prec_index,
+            partition_handled = use_partitioning,
+            variable_name = variable_name
+        ))
+
     } else {
         setup_code <- c(
             "    # Multi-tree phylogenetic VCV setup",
             "    # K is the selected tree index (categorical)",
             "    for(k in 1:Ntree) {",
-            "       Sigma_phylo[1:N, 1:N, k] <- inverse(multiVCV[1:N, 1:N, k])",
+            paste0("       Sigma_phylo[1:", loop_bound, ", 1:", loop_bound, ", k] <- inverse(multiVCV[1:", loop_bound, ", 1:", loop_bound, ", k])"),
             "    }"
         )
-        error_prior <- paste0(
-            "    ",
-            precision_parameter,
-            " ~ dgamma(10, 10)\n",
-            "    ",
-            variable_name,
-            "[1:N] ~ dmnorm(zeros[1:N], ",
-            precision_parameter,
-            " * Sigma_phylo[1:N, 1:N, K])"
+        model_lines <- paste0(
+            "    ", prec_param, " ~ dgamma(10, 10)\n",
+            "    ", raw_var, "[1:", loop_bound, "] ~ dmnorm(", zeros_name, "[1:", loop_bound, "], ",
+            "Sigma_phylo[1:", loop_bound, ", 1:", loop_bound, ", K])\n",
+            "    for(", j_idx, " in 1:", loop_bound, ") {\n",
+            "        ", err_var, "[", j_idx, "] <- ", raw_var, "[", j_idx, "] * (1/sqrt(", prec_param, "))\n",
+            "    }"
         )
-    }
 
-    return(list(setup_code = setup_code, error_prior = error_prior))
+        term_str <- paste0(err_var, "[", i_index, "]")
+
+        return(list(setup_code = setup_code, model_lines = model_lines, term = term_str))
+    }
 }
 
 #' Prepare Structure Data for Multiple Trees
