@@ -11,17 +11,17 @@
 ## Citation
 
 Source:
-[`inst/CITATION`](https://github.com/because-pkg/because.phybase/blob/v1.0.0/inst/CITATION)
+[`inst/CITATION`](https://github.com/because-pkg/because.phybase/blob/main/inst/CITATION)
 
 von Hardenberg A, Gonzalez-Voyer A (2025). *because.phybase:
 Phylogenetic Structural Equation Models (PhyBaSE) in R*. R package
-version 0.1.1, <https://because-pkg.github.io/because.phybase/>.
+version 1.0.0, <https://because-pkg.github.io/because.phybase/>.
 
     @Manual{,
       title = {because.phybase: Phylogenetic Structural Equation Models (PhyBaSE) in R},
       author = {Achaz {von Hardenberg} and Alejandro Gonzalez-Voyer},
       year = {2025},
-      note = {R package version 0.1.1},
+      note = {R package version 1.0.0},
       url = {https://because-pkg.github.io/because.phybase/},
     }
 
