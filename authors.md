@@ -11,7 +11,7 @@
 ## Citation
 
 Source:
-[`inst/CITATION`](https://github.com/because-pkg/because.phybase/blob/main/inst/CITATION)
+[`inst/CITATION`](https://github.com/because-pkg/because.phybase/blob/v1.0.0/inst/CITATION)
 
 von Hardenberg A, Gonzalez-Voyer A (2025). *because.phybase:
 Phylogenetic Structural Equation Models (PhyBaSE) in R*. R package
