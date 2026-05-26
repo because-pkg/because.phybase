@@ -395,6 +395,38 @@ instead of a single tree; `because` will then randomly sample one tree
 from the list at each MCMC iteration, effectively integrating over
 phylogenetic uncertainty when estimating model parameters.
 
+### High-Performance `multiPhylo` Models with NIMBLE
+
+When passing a large `multiPhylo` object (e.g., hundreds of trees for
+hundreds of species), the default JAGS engine may run very slowly. This
+is because JAGS is forced to evaluate large, dense variance-covariance
+matrices repeatedly as the MCMC sampler jumps between trees.
+
+To achieve massive speedups, we highly recommend using the **NIMBLE**
+engine (`engine = "nimble"`) for models containing `multiPhylo` objects.
+When using NIMBLE, `because.phybase` automatically switches to a
+highly-optimized Non-Centered Parameterization using pre-calculated
+Cholesky factors. NIMBLE compiles this directly into C++ code, allowing
+the MCMC to bypass heavy matrix decompositions entirely. This allows
+your models to run exponentially faster without exhausting your system
+memory.
+
+``` r
+
+# Ensure you have the 'nimble' package installed from CRAN
+# install.packages("nimble")
+
+fit_multi_fast <- because(
+    equations = sem8_eq,
+    data = rhino.dat,
+    structure = rhino.multi.tree, # A multiPhylo object
+    id_col = "SP",
+    engine = "nimble", # Use NIMBLE for high-performance Cholesky parameterization
+    parallel = TRUE,
+    n.cores = 3
+)
+```
+
 ## References
 
 von Hardenberg, A. and Gonzalez-Voyer, A. (2025). PhyBaSE: A Bayesian

@@ -458,6 +458,37 @@ You just need to provide a list of phylogenetic trees (class
 of a single tree; <code>because</code> will then randomly sample one
 tree from the list at each MCMC iteration, effectively integrating over
 phylogenetic uncertainty when estimating model parameters.</p>
+<div class="section level3">
+<h3 id="high-performance-multiphylo-models-with-nimble">High-Performance <code>multiPhylo</code> Models with NIMBLE<a class="anchor" aria-label="anchor" href="#high-performance-multiphylo-models-with-nimble"></a>
+</h3>
+<p>When passing a large <code>multiPhylo</code> object (e.g., hundreds
+of trees for hundreds of species), the default JAGS engine may run very
+slowly. This is because JAGS is forced to evaluate large, dense
+variance-covariance matrices repeatedly as the MCMC sampler jumps
+between trees.</p>
+<p>To achieve massive speedups, we highly recommend using the
+<strong>NIMBLE</strong> engine (<code>engine = "nimble"</code>) for
+models containing <code>multiPhylo</code> objects. When using NIMBLE,
+<code>because.phybase</code> automatically switches to a
+highly-optimized Non-Centered Parameterization using pre-calculated
+Cholesky factors. NIMBLE compiles this directly into C++ code, allowing
+the MCMC to bypass heavy matrix decompositions entirely. This allows
+your models to run exponentially faster without exhausting your system
+memory.</p>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Ensure you have the 'nimble' package installed from CRAN</span></span>
+<span><span class="co"># install.packages("nimble")</span></span>
+<span></span>
+<span><span class="va">fit_multi_fast</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://because-pkg.github.io/because/reference/because.html" class="external-link">because</a></span><span class="op">(</span></span>
+<span>    equations <span class="op">=</span> <span class="va">sem8_eq</span>,</span>
+<span>    data <span class="op">=</span> <span class="va">rhino.dat</span>,</span>
+<span>    structure <span class="op">=</span> <span class="va">rhino.multi.tree</span>, <span class="co"># A multiPhylo object</span></span>
+<span>    id_col <span class="op">=</span> <span class="st">"SP"</span>,</span>
+<span>    engine <span class="op">=</span> <span class="st">"nimble"</span>, <span class="co"># Use NIMBLE for high-performance Cholesky parameterization</span></span>
+<span>    parallel <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>    n.cores <span class="op">=</span> <span class="fl">3</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+</div>
 </div>
 <div class="section level2">
 <h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a>
