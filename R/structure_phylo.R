@@ -347,6 +347,8 @@ jags_structure_definition.multiPhylo <- function(
     if (is.null(i_index)) i_index <- "i"
     s_name <- args$s_name
     if (is.null(s_name)) s_name <- "multiPhylo"
+    engine <- args$engine
+    if (is.null(engine)) engine <- "jags"
 
     # Unique random effect node name to avoid collision with response variable
     err_var <- paste0("err_", variable_name, "_", s_name)
@@ -365,32 +367,66 @@ jags_structure_definition.multiPhylo <- function(
     use_partitioning <- isTRUE(args$use_partitioning)
 
     if (optimize) {
-        setup_code <- c(
-            "    # Multi-tree phylogenetic Precision setup",
-            "    # Prec_multiPhylo[,,k] is passed as data",
-            paste0("    # We select the k-th precision matrix: Prec_multiPhylo[1:", loop_bound, ", 1:", loop_bound, ", K]")
-        )
+        if (engine == "nimble") {
+            setup_code <- c(
+                "    # Multi-tree phylogenetic Cholesky setup (NIMBLE optimized)",
+                "    # L_multiPhylo[,,k] is passed as data",
+                paste0("    # We select the k-th lower Cholesky factor: L_multiPhylo[1:", loop_bound, ", 1:", loop_bound, ", K]")
+            )
 
-        if (use_partitioning) {
-            model_lines <- paste0(
-                "    # Pagel's Lambda Partitioning (Scaling only) for ", variable_name, " and multiPhylo\n",
-                "    ", raw_var, "[1:", loop_bound, "] ~ dmnorm(", zeros_name, "[1:", loop_bound, "], ",
-                "Prec_multiPhylo[1:", loop_bound, ", 1:", loop_bound, ", K])\n",
+            z_var <- paste0("z_", variable_name, "_", s_name)
+
+            model_lines_common <- paste0(
+                "    for (i_z_", variable_name, " in 1:", loop_bound, ") {\n",
+                "        ", z_var, "[i_z_", variable_name, "] ~ dnorm(0, 1)\n",
+                "    }\n",
                 "    for(", j_idx, " in 1:", loop_bound, ") {\n",
+                "        ", raw_var, "[", j_idx, "] <- inprod(L_multiPhylo[", j_idx, ", 1:", loop_bound, ", K], ", z_var, "[1:", loop_bound, "])\n",
                 "        ", err_var, "[", j_idx, "] <- ", raw_var, "[", j_idx, "] * (1/sqrt(", prec_param, "))\n",
                 "    }"
             )
+
+            if (use_partitioning) {
+                model_lines <- paste0(
+                    "    # Pagel's Lambda Partitioning (Scaling only) for ", variable_name, " and multiPhylo\n",
+                    model_lines_common
+                )
+            } else {
+                model_lines <- paste0(
+                    "    ", prec_param, " ~ dgamma(10, 10)\n",
+                    model_lines_common
+                )
+            }
+            prec_index <- paste0("L_multiPhylo[1:", loop_bound, ", 1:", loop_bound, ", K]")
         } else {
-            model_lines <- paste0(
-                "    ", prec_param, " ~ dgamma(10, 10)\n",
-                "    ", raw_var, "[1:", loop_bound, "] ~ dmnorm(", zeros_name, "[1:", loop_bound, "], ",
-                "Prec_multiPhylo[1:", loop_bound, ", 1:", loop_bound, ", K])\n",
-                "    for(", j_idx, " in 1:", loop_bound, ") {\n",
-                "        ", err_var, "[", j_idx, "] <- ", raw_var, "[", j_idx, "] * (1/sqrt(", prec_param, "))\n",
-                "    }"
+            setup_code <- c(
+                "    # Multi-tree phylogenetic Precision setup (JAGS Memory Safe)",
+                "    # Prec_multiPhylo[,,k] is passed as data",
+                paste0("    # We select the k-th precision matrix: Prec_multiPhylo[1:", loop_bound, ", 1:", loop_bound, ", K]")
             )
+
+            if (use_partitioning) {
+                model_lines <- paste0(
+                    "    # Pagel's Lambda Partitioning (Scaling only) for ", variable_name, " and multiPhylo\n",
+                    "    ", raw_var, "[1:", loop_bound, "] ~ dmnorm(", zeros_name, "[1:", loop_bound, "], ",
+                    "Prec_multiPhylo[1:", loop_bound, ", 1:", loop_bound, ", K])\n",
+                    "    for(", j_idx, " in 1:", loop_bound, ") {\n",
+                    "        ", err_var, "[", j_idx, "] <- ", raw_var, "[", j_idx, "] * (1/sqrt(", prec_param, "))\n",
+                    "    }"
+                )
+            } else {
+                model_lines <- paste0(
+                    "    ", prec_param, " ~ dgamma(10, 10)\n",
+                    "    ", raw_var, "[1:", loop_bound, "] ~ dmnorm(", zeros_name, "[1:", loop_bound, "], ",
+                    "Prec_multiPhylo[1:", loop_bound, ", 1:", loop_bound, ", K])\n",
+                    "    for(", j_idx, " in 1:", loop_bound, ") {\n",
+                    "        ", err_var, "[", j_idx, "] <- ", raw_var, "[", j_idx, "] * (1/sqrt(", prec_param, "))\n",
+                    "    }"
+                )
+            }
+            prec_index <- paste0("Prec_multiPhylo[1:", loop_bound, ", 1:", loop_bound, ", K]")
         }
-        prec_index <- paste0("Prec_multiPhylo[1:", loop_bound, ", 1:", loop_bound, ", K]")
+
         term_str <- paste0(err_var, "[", i_index, "]")
 
         return(list(
@@ -447,6 +483,10 @@ prepare_structure_data.multiPhylo <- function(
     quiet = FALSE,
     ...
 ) {
+    args <- list(...)
+    engine <- args$engine
+    if (is.null(engine)) engine <- "jags"
+
     if (!requireNamespace("ape", quietly = TRUE)) {
         stop("Package 'ape' is required for phylogenetic models.")
     }
@@ -472,18 +512,25 @@ prepare_structure_data.multiPhylo <- function(
     data_list[["Ntree"]] <- n_trees
 
     if (optimize) {
-        # Array of Precision Matrices
-        if (!quiet) {
-            message(
-                "Calculating array of precision matrices (optimize=TRUE)..."
-            )
+        if (engine == "nimble") {
+            # Array of Cholesky Factors for NIMBLE
+            if (!quiet) message("Calculating array of lower Cholesky factors for NIMBLE (optimize=TRUE)...")
+            L_multi <- array(NA, dim = c(N, N, n_trees))
+            for (i in 1:n_trees) {
+                vcv <- ape::vcv(structure[[i]])
+                L_multi[,, i] <- t(chol(vcv))
+            }
+            data_list[["L_multiPhylo"]] <- L_multi
+        } else {
+            # Array of Precision Matrices for JAGS
+            if (!quiet) message("Calculating array of precision matrices for JAGS (optimize=TRUE)...")
+            Prec_multi <- array(NA, dim = c(N, N, n_trees))
+            for (i in 1:n_trees) {
+                vcv <- ape::vcv(structure[[i]])
+                Prec_multi[,, i] <- solve(vcv)
+            }
+            data_list[["Prec_multiPhylo"]] <- Prec_multi
         }
-        Prec_multi <- array(NA, dim = c(N, N, n_trees))
-        for (i in 1:n_trees) {
-            vcv <- ape::vcv(structure[[i]])
-            Prec_multi[,, i] <- solve(vcv)
-        }
-        data_list[["Prec_multiPhylo"]] <- Prec_multi
     } else {
         # Array of VCV Matrices
         multiVCV <- array(NA, dim = c(N, N, n_trees))
