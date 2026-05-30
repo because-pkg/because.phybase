@@ -65,6 +65,7 @@ jags_structure_definition.phylo <- function(
     structure,
     variable_name = "err",
     optimize = TRUE,
+    precision_parameter = "lambda",
     ...
 ) {
     args <- list(...)
@@ -81,10 +82,11 @@ jags_structure_definition.phylo <- function(
     err_var <- paste0("err_", variable_name, "_", s_name)
 
     # Unique parameter naming to avoid JAGS collisions - UNIFIED naming: tau_u_Structure_Variable
-    prec_param <- args$precision_parameter
-    if (is.null(prec_param)) {
+    prec_param <- if (precision_parameter == "lambda") {
         # [UNIFICATION] Modern naming: tau_u_phylo_Variable
-        prec_param <- paste0("tau_u_", s_name, "_", variable_name)
+        paste0("tau_u_", s_name, "_", variable_name)
+    } else {
+        precision_parameter
     }
     sig_param <- sub("tau_u_", "sigma_", prec_param)
     raw_var <- paste0("err_raw_", variable_name, "_", s_name)
@@ -336,6 +338,7 @@ jags_structure_definition.multiPhylo <- function(
     structure,
     variable_name = "err",
     optimize = TRUE,
+    precision_parameter = "lambda",
     ...
 ) {
     args <- list(...)
@@ -354,9 +357,10 @@ jags_structure_definition.multiPhylo <- function(
     err_var <- paste0("err_", variable_name, "_", s_name)
 
     # Unique parameter naming to avoid JAGS collisions
-    prec_param <- args$precision_parameter
-    if (is.null(prec_param)) {
-        prec_param <- paste0("tau_u_", s_name, "_", variable_name)
+    prec_param <- if (precision_parameter == "lambda") {
+        paste0("tau_u_", s_name, "_", variable_name)
+    } else {
+        precision_parameter
     }
     sig_param <- sub("tau_u_", "sigma_", prec_param)
     raw_var <- paste0("err_raw_", variable_name, "_", s_name)
