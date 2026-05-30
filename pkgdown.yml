@@ -2,9 +2,9 @@ pandoc: 3.8.3
 pkgdown: 2.2.0
 pkgdown_sha: ~
 articles:
-  03_phylogenetic_models: 03_phylogenetic_models.html
-  04_missing_data: 04_missing_data.html
-last_built: 2026-05-26T23:30Z
+  missing_data: missing_data.html
+  phylogenetic_models: phylogenetic_models.html
+last_built: 2026-05-30T22:15Z
 urls:
   reference: https://because-pkg.github.io/because.phybase/reference
   article: https://because-pkg.github.io/because.phybase/articles
