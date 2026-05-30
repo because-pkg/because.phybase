@@ -60,7 +60,7 @@ sum(is.na(rhino_na$BM))
 
 ## The Model
 
-We define the same structural equation model (sem8) as in the previous [vignette](03_phylogenetic_model.html): \* Body Mass (`BM`) affects Litter Size (`LS`) and Nose
+We define the same structural equation model (sem8) as in the previous [vignette](phylogenetic_models.html): \* Body Mass (`BM`) affects Litter Size (`LS`) and Nose
 Length (`NL`). \* Range Size (`RS`) affects Nose Length (`NL`). \* Nose
 Length (`NL`) affects Dispersal Distance (`DD`).
 
