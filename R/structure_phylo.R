@@ -242,6 +242,11 @@ prepare_structure_data.phylo <- function(
     quiet = FALSE,
     ...
 ) {
+    args <- list(...)
+    engine <- args$engine %||% "jags"
+    if (engine == "numpyro") {
+        optimize <- FALSE
+    }
     if (!requireNamespace("ape", quietly = TRUE)) {
         stop("Package 'ape' is required for phylogenetic models.")
     }
@@ -488,9 +493,10 @@ prepare_structure_data.multiPhylo <- function(
     ...
 ) {
     args <- list(...)
-    engine <- args$engine
-    if (is.null(engine)) engine <- "jags"
-
+    engine <- args$engine %||% "jags"
+    if (engine == "numpyro") {
+        optimize <- FALSE
+    }
     if (!requireNamespace("ape", quietly = TRUE)) {
         stop("Package 'ape' is required for phylogenetic models.")
     }
@@ -535,6 +541,20 @@ prepare_structure_data.multiPhylo <- function(
             }
             data_list[["Prec_multiPhylo"]] <- Prec_multi
         }
+    } else if (engine == "numpyro") {
+        if (!quiet) message("Calculating array of eigen decompositions for NumPyro...")
+        eigvals_multi <- array(NA, dim = c(N, n_trees))
+        eigvecs_multi <- array(NA, dim = c(N, N, n_trees))
+        for (i in 1:n_trees) {
+            vcv <- ape::vcv(structure[[i]])
+            eig <- eigen(vcv, symmetric = TRUE)
+            eigvals_multi[, i] <- eig$values
+            eigvecs_multi[,, i] <- eig$vectors
+        }
+        data_list[["multiPhylo"]] <- list(
+            eigvals = eigvals_multi,
+            eigvecs = eigvecs_multi
+        )
     } else {
         # Array of VCV Matrices
         multiVCV <- array(NA, dim = c(N, N, n_trees))
@@ -548,4 +568,100 @@ prepare_structure_data.multiPhylo <- function(
         structure_object = structure,
         data_list = data_list
     ))
+}
+
+#' NumPyro Structure Definition for Phylogenetic Trees
+#'
+#' @description
+#' Implements the `numpyro_structure_definition` S3 method for `phylo` objects.
+#' Returns the JAX/NumPyro Python code to compute the Cholesky factor of the
+#' phylogenetic variance-covariance matrix dynamically scaled by Pagel's lambda.
+#'
+#' @param structure A `phylo` object.
+#' @param variable_name Name of the variable.
+#' @param ... Additional arguments.
+#'
+#' @return A character string of Python code.
+#' @exportS3Method because::numpyro_structure_definition phylo
+numpyro_structure_definition.phylo <- function(structure, variable_name = "err", ...) {
+    py_code <- "
+def phylo_transform(numpyro, jnp, jax, dist, var, group_name, num_groups, matrix, z_raw, sigma, shared_state):
+    import numpy as np
+    
+    # Eigendecomposition is computed EXACTLY ONCE during model tracing
+    # This avoids doing an O(N^3) Cholesky decomposition at every leapfrog step!
+    eigvals, eigvecs = np.linalg.eigh(np.array(matrix))
+    eigvals = jnp.array(eigvals)
+    eigvecs = jnp.array(eigvecs)
+    
+    lambda_val = numpyro.sample(f'lambda_{var}_{group_name}', dist.Uniform(0, 1))
+    
+    # D_struct = lambda * Lambda
+    eigvals_struct = lambda_val * eigvals
+    
+    # Prevent negative eigenvalues due to numerical errors
+    eigvals_struct = jnp.maximum(eigvals_struct, 1e-8)
+    
+    # Scale z_raw by the structural standard deviations (sqrt of eigenvalues) and rotate back
+    z_scaled = z_raw * jnp.sqrt(eigvals_struct)
+    z_group = jnp.dot(eigvecs, z_scaled)
+    
+    # Extract the residual (1-lambda) variance into the observation noise for Variance Partitioning
+    sigma_obs = sigma * jnp.sqrt(jnp.maximum(1.0 - lambda_val, 1e-8))
+    
+    numpyro.deterministic(f'sigma_phylo_{var}_{group_name}', sigma * jnp.sqrt(lambda_val))
+    return z_group, sigma_obs
+"
+    return(py_code)
+}
+
+#' Implements the `numpyro_structure_definition` S3 method for `multiPhylo` objects.
+#'
+#' @param structure The `multiPhylo` object.
+#' @param variable_name The response variable name.
+#' @param ... Additional arguments.
+#'
+#' @exportS3Method because::numpyro_structure_definition multiPhylo
+numpyro_structure_definition.multiPhylo <- function(structure, variable_name = "err", ...) {
+    args <- list(...)
+    group_name <- args$s_name
+    if (is.null(group_name)) group_name <- "multiPhylo"
+    
+    py_code <- "
+def multiPhylo_transform(numpyro, jnp, jax, dist, var, group_name, num_groups, matrix_dict, z_raw, sigma, shared_state):
+    eigvals_all = jnp.array(matrix_dict['eigvals'])
+    eigvecs_all = jnp.array(matrix_dict['eigvecs'])
+    n_trees = eigvals_all.shape[-1]
+    
+    k_name = f'K_tree_{group_name}'
+    if k_name not in shared_state:
+        shared_state[k_name] = numpyro.sample(k_name, dist.Categorical(probs=jnp.ones(n_trees)/n_trees))
+    K = shared_state[k_name]
+    
+    eigvals = eigvals_all[..., K]
+    eigvecs = eigvecs_all[..., K]
+    
+    lambda_val = numpyro.sample(f'lambda_{var}_{group_name}', dist.Uniform(0, 1))
+    
+    eigvals_struct = lambda_val * eigvals
+    eigvals_struct = jnp.maximum(eigvals_struct, 1e-8)
+    
+    z_scaled = z_raw * jnp.sqrt(eigvals_struct)
+    z_group = jnp.dot(eigvecs, z_scaled)
+    
+    sigma_obs = sigma * jnp.sqrt(jnp.maximum(1.0 - lambda_val, 1e-8))
+    
+    numpyro.deterministic(f'sigma_phylo_{var}_{group_name}', sigma * jnp.sqrt(lambda_val))
+    return z_group, sigma_obs
+"
+    return(py_code)
+}
+
+#' Get Structure Name Hook for multiPhylo
+#'
+#' @param structure The multiPhylo structure.
+#' @param ... Additional arguments.
+#' @exportS3Method because::get_structure_name_hook multiPhylo
+get_structure_name_hook.multiPhylo <- function(structure, ...) {
+    return("multiPhylo")
 }
