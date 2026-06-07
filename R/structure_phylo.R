@@ -264,6 +264,38 @@ prepare_structure_data.phylo <- function(
     # 2. Calculate VCV
     vcv_mat <- ape::vcv(phylo_tree)
 
+    # 2b. Align VCV matrix with data factor levels
+    # Try to find target_order either from args$row_ids or from data columns
+    target_order <- NULL
+    
+    if (!is.null(args$row_ids) && setequal(phylo_tree$tip.label, as.character(args$row_ids))) {
+        target_order <- levels(as.factor(args$row_ids))
+        if (!quiet) message("Aligning phylogeny to provided row_ids (id_col).")
+    } else if (!is.null(data)) {
+        matching_col <- NULL
+        for (col_name in names(data)) {
+            if (is.character(data[[col_name]]) || is.factor(data[[col_name]])) {
+                # Check if unique elements exactly match tip labels
+                if (setequal(phylo_tree$tip.label, as.character(data[[col_name]]))) {
+                    matching_col <- col_name
+                    break
+                }
+            }
+        }
+        if (!is.null(matching_col)) {
+            target_order <- levels(as.factor(data[[matching_col]]))
+            if (!quiet) message(sprintf("Aligning phylogeny to data column '%s'", matching_col))
+        }
+    }
+    
+    if (!is.null(target_order)) {
+        vcv_mat <- vcv_mat[target_order, target_order, drop = FALSE]
+    } else {
+        if (!quiet) {
+            warning("Could not find a matching data column to align phylogeny tip labels. Phylogenetic signal may be lost if data is not ordered alphabetically.")
+        }
+    }
+
     # 3. Check dimensions against data
     N <- nrow(vcv_mat)
 
@@ -495,7 +527,7 @@ prepare_structure_data.multiPhylo <- function(
     args <- list(...)
     engine <- args$engine %||% "jags"
     if (engine == "numpyro") {
-        optimize <- FALSE
+        if (!quiet) message("Using DiscreteHMCGibbs for multiPhylo marginalization in NumPyro...")
     }
     if (!requireNamespace("ape", quietly = TRUE)) {
         stop("Package 'ape' is required for phylogenetic models.")
@@ -516,18 +548,65 @@ prepare_structure_data.multiPhylo <- function(
     # 2. Compute matrices
     # Use first tree to get N
     first_vcv <- ape::vcv(structure[[1]])
+    
+    # Align tree tips with data factor levels
+    target_order <- NULL
+    
+    if (!is.null(args$row_ids) && setequal(structure[[1]]$tip.label, as.character(args$row_ids))) {
+        target_order <- levels(as.factor(args$row_ids))
+        if (!quiet) message("Aligning multiPhylo to provided row_ids (id_col).")
+    } else if (!is.null(data)) {
+        matching_col <- NULL
+        for (col_name in names(data)) {
+            if (is.character(data[[col_name]]) || is.factor(data[[col_name]])) {
+                if (setequal(structure[[1]]$tip.label, as.character(data[[col_name]]))) {
+                    matching_col <- col_name
+                    break
+                }
+            }
+        }
+        if (!is.null(matching_col)) {
+            target_order <- levels(as.factor(data[[matching_col]]))
+            if (!quiet) message(sprintf("Aligning multiPhylo to data column '%s'", matching_col))
+        }
+    }
+    
+    if (!is.null(target_order)) {
+        first_vcv <- first_vcv[target_order, target_order, drop = FALSE]
+    } else {
+        if (!quiet) {
+            warning("Could not find a matching data column to align multiPhylo tip labels. Phylogenetic signal may be lost if data is not ordered alphabetically.")
+        }
+    }
+
     N <- nrow(first_vcv)
 
     data_list <- list()
     data_list[["Ntree"]] <- n_trees
 
-    if (optimize) {
+    if (engine == "numpyro") {
+        if (!quiet) message("Calculating array of eigen decompositions for NumPyro...")
+        eigvals_multi <- array(NA, dim = c(N, n_trees))
+        eigvecs_multi <- array(NA, dim = c(N, N, n_trees))
+        for (i in 1:n_trees) {
+            vcv <- ape::vcv(structure[[i]])
+            if (!is.null(target_order)) vcv <- vcv[target_order, target_order, drop=FALSE]
+            eig <- eigen(vcv, symmetric = TRUE)
+            eigvals_multi[, i] <- eig$values
+            eigvecs_multi[,, i] <- eig$vectors
+        }
+        data_list[["multiPhylo"]] <- list(
+            eigvals = eigvals_multi,
+            eigvecs = eigvecs_multi
+        )
+    } else if (optimize) {
         if (engine == "nimble") {
             # Array of Cholesky Factors for NIMBLE
             if (!quiet) message("Calculating array of lower Cholesky factors for NIMBLE (optimize=TRUE)...")
             L_multi <- array(NA, dim = c(N, N, n_trees))
             for (i in 1:n_trees) {
                 vcv <- ape::vcv(structure[[i]])
+                if (!is.null(target_order)) vcv <- vcv[target_order, target_order, drop=FALSE]
                 L_multi[,, i] <- t(chol(vcv))
             }
             data_list[["L_multiPhylo"]] <- L_multi
@@ -537,31 +616,20 @@ prepare_structure_data.multiPhylo <- function(
             Prec_multi <- array(NA, dim = c(N, N, n_trees))
             for (i in 1:n_trees) {
                 vcv <- ape::vcv(structure[[i]])
+                if (!is.null(target_order)) vcv <- vcv[target_order, target_order, drop=FALSE]
                 Prec_multi[,, i] <- solve(vcv)
             }
             data_list[["Prec_multiPhylo"]] <- Prec_multi
         }
-    } else if (engine == "numpyro") {
-        if (!quiet) message("Calculating array of eigen decompositions for NumPyro...")
-        eigvals_multi <- array(NA, dim = c(N, n_trees))
-        eigvecs_multi <- array(NA, dim = c(N, N, n_trees))
-        for (i in 1:n_trees) {
-            vcv <- ape::vcv(structure[[i]])
-            eig <- eigen(vcv, symmetric = TRUE)
-            eigvals_multi[, i] <- eig$values
-            eigvecs_multi[,, i] <- eig$vectors
-        }
-        data_list[["multiPhylo"]] <- list(
-            eigvals = eigvals_multi,
-            eigvecs = eigvecs_multi
-        )
     } else {
         # Array of VCV Matrices
         multiVCV <- array(NA, dim = c(N, N, n_trees))
         for (i in 1:n_trees) {
-            multiVCV[,, i] <- ape::vcv(structure[[i]])
+            vcv <- ape::vcv(structure[[i]])
+            if (!is.null(target_order)) vcv <- vcv[target_order, target_order, drop=FALSE]
+            multiVCV[,, i] <- vcv
         }
-        data_list[["multiVCV"]] <- multiVCV
+        data_list[["VCV_multiPhylo"]] <- multiVCV
     }
 
     return(list(
@@ -594,23 +662,17 @@ def phylo_transform(numpyro, jnp, jax, dist, var, group_name, num_groups, matrix
     eigvals = jnp.array(eigvals)
     eigvecs = jnp.array(eigvecs)
     
-    lambda_val = numpyro.sample(f'lambda_{var}_{group_name}', dist.Uniform(0, 1))
-    
-    # D_struct = lambda * Lambda
-    eigvals_struct = lambda_val * eigvals
-    
     # Prevent negative eigenvalues due to numerical errors
-    eigvals_struct = jnp.maximum(eigvals_struct, 1e-8)
+    eigvals_safe = jnp.maximum(eigvals, 1e-8)
     
     # Scale z_raw by the structural standard deviations (sqrt of eigenvalues) and rotate back
-    z_scaled = z_raw * jnp.sqrt(eigvals_struct)
+    z_scaled = z_raw * jnp.sqrt(eigvals_safe)
     z_group = jnp.dot(eigvecs, z_scaled)
     
-    # Extract the residual (1-lambda) variance into the observation noise for Variance Partitioning
-    sigma_obs = sigma * jnp.sqrt(jnp.maximum(1.0 - lambda_val, 1e-8))
-    
-    numpyro.deterministic(f'sigma_phylo_{var}_{group_name}', sigma * jnp.sqrt(lambda_val))
-    return z_group, sigma_obs
+    # Return z_group and the UNCHANGED sigma.
+    # because_py will do: u_group = z_group * sigma
+    # This results in covariance = sigma^2 * Phylo_Cov
+    return z_group, sigma
 "
     return(py_code)
 }
@@ -638,21 +700,29 @@ def multiPhylo_transform(numpyro, jnp, jax, dist, var, group_name, num_groups, m
         shared_state[k_name] = numpyro.sample(k_name, dist.Categorical(probs=jnp.ones(n_trees)/n_trees))
     K = shared_state[k_name]
     
-    eigvals = eigvals_all[..., K]
-    eigvecs = eigvecs_all[..., K]
+    # Safe indexing for arbitrary batch dimensions from enumeration
+    # eigvals_all shape: (N, n_trees) -> (N, ...)
+    eigvals = jnp.take(eigvals_all, K, axis=-1)
+    # Move batch dimensions to the front if they exist: shape becomes (..., N)
+    if eigvals.ndim > 1:
+        eigvals = jnp.moveaxis(eigvals, 0, -1)
     
-    lambda_val = numpyro.sample(f'lambda_{var}_{group_name}', dist.Uniform(0, 1))
+    # eigvecs_all shape: (N, N, n_trees) -> (N, N, ...)
+    eigvecs = jnp.take(eigvecs_all, K, axis=-1)
+    # Move batch dimensions to the front: shape becomes (..., N, N)
+    if eigvecs.ndim > 2:
+        eigvecs = jnp.moveaxis(eigvecs, [0, 1], [-2, -1])
     
-    eigvals_struct = lambda_val * eigvals
-    eigvals_struct = jnp.maximum(eigvals_struct, 1e-8)
+    eigvals_safe = jnp.maximum(eigvals, 1e-8)
     
-    z_scaled = z_raw * jnp.sqrt(eigvals_struct)
-    z_group = jnp.dot(eigvecs, z_scaled)
+    # z_raw has shape (..., N). eigvals_safe has shape (..., N).
+    z_scaled = z_raw * jnp.sqrt(eigvals_safe)
     
-    sigma_obs = sigma * jnp.sqrt(jnp.maximum(1.0 - lambda_val, 1e-8))
+    # Batched matrix-vector multiplication
+    z_group = jnp.einsum('...ij,...j->...i', eigvecs, z_scaled)
     
-    numpyro.deterministic(f'sigma_phylo_{var}_{group_name}', sigma * jnp.sqrt(lambda_val))
-    return z_group, sigma_obs
+    # Return z_group and the UNCHANGED sigma.
+    return z_group, sigma
 "
     return(py_code)
 }
