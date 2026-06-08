@@ -163,20 +163,38 @@ jags_structure_definition.phylo <- function(
             )
         } else {
             if (use_partitioning) {
-                # [PARTITIONING] Pagel's Lambda logic
+                # [PARTITIONING] MEE-paper style: direct lambda + sigma_total, pre-computed Prec_phylo
+                # tau_u_phylo = 1/(lambda * sigma_total^2)  [phylogenetic precision]
+                # tau_res     = 1/((1-lambda) * sigma_total^2)  [residual precision]
+                # This directly samples lambda on [0,1] like Pagel (1999), avoiding the
+                # correlated (tau_u_phylo, sigma_res) posterior ridge that kills JAGS mixing.
+                lambda_param      <- paste0("lambda_", variable_name)
+                sigma_total_param <- paste0("sigma_total_", variable_name)
+                sigma_phylo_param <- paste0("sigma_", s_name, "_", variable_name)
+                sigma_res_param   <- paste0("sigma_", variable_name, "_res")
+                tau_res_param     <- paste0("tau_res_", variable_name)
+                # NOTE: Do NOT start model_lines with a comment.
+                # safe_add_lines treats lines starting with # as pass-through, bypassing
+                # declared_nodes registration. The first line must be the stochastic assignment.
                 model_lines <- paste0(
-                    "    # Pagel's Lambda Partitioning (Scaling only) for ", variable_name, " and phylogeny\n",
+                    "    ", lambda_param, " ~ dunif(0, 1) # Pagel lambda for ", variable_name, "\n",
+                    "    ", sigma_total_param, " ~ dunif(0, 10) # total phylogenetic SD\n",
+                    "    ", prec_param, " <- 1 / (", lambda_param, " * ", sigma_total_param,
+                        " * ", sigma_total_param, ") # phylogenetic precision\n",
+                    "    ", tau_res_param, " <- 1 / ((1 - ", lambda_param, ") * ",
+                        sigma_total_param, " * ", sigma_total_param, ") # residual precision\n",
+                    "    ", sigma_phylo_param, " <- sqrt(", lambda_param, ") * ", sigma_total_param, " # phylogenetic SD\n",
+                    "    ", sigma_res_param,   " <- sqrt(1 - ", lambda_param, ") * ", sigma_total_param, " # residual SD\n",
                     "    ", raw_var, "[1:", loop_bound, "] ~ dmnorm(", zeros_name, "[1:", loop_bound, "], ",
                     "Prec_phylo[1:", loop_bound, ", 1:", loop_bound, "])\n",
                     "    for(", j_idx, " in 1:", loop_bound, ") {\n",
-                    "        # Scaled by (1/sqrt(tau_u)) where tau_u is defined by Core partitioning\n",
                     "        ", err_var, "[", j_idx, "] <- ", raw_var, "[", j_idx, "] * (1/sqrt(", prec_param, "))\n",
                     "    }"
                 )
             } else {
-                # [ADDITIVE] Standard legacy random effect prior
+                # [ADDITIVE] Standard random effect prior (fallback when multiple structures)
                 model_lines <- paste0(
-                    "    ", prec_param, " ~ dgamma(10, 10)\n",
+                    "    ", prec_param, " ~ dgamma(1, 1)\n",
                     "    ", raw_var, "[1:", loop_bound, "] ~ dmnorm(", zeros_name, "[1:", loop_bound, "], ",
                     "Prec_phylo[1:", loop_bound, ", 1:", loop_bound, "])\n",
                     "    for(", j_idx, " in 1:", loop_bound, ") {\n",
@@ -429,12 +447,12 @@ jags_structure_definition.multiPhylo <- function(
 
             if (use_partitioning) {
                 model_lines <- paste0(
-                    "    # Pagel's Lambda Partitioning (Scaling only) for ", variable_name, " and multiPhylo\n",
+                    "    # Pagel's Lambda Partitioning (Scaling only) for ", variable_name, " and multiPhylo (NIMBLE)\n",
                     model_lines_common
                 )
             } else {
                 model_lines <- paste0(
-                    "    ", prec_param, " ~ dgamma(10, 10)\n",
+                    "    ", prec_param, " ~ dgamma(1, 1)\n",
                     model_lines_common
                 )
             }
@@ -447,8 +465,22 @@ jags_structure_definition.multiPhylo <- function(
             )
 
             if (use_partitioning) {
+                # MEE-paper style: direct lambda + sigma_total, pre-computed Prec_multiPhylo[,,K]
+                # NOTE: First line must NOT be a comment (safe_add_lines would skip declared_nodes registration).
+                lambda_param      <- paste0("lambda_", variable_name)
+                sigma_total_param <- paste0("sigma_total_", variable_name)
+                sigma_phylo_param <- paste0("sigma_", s_name, "_", variable_name)
+                sigma_res_param   <- paste0("sigma_", variable_name, "_res")
+                tau_res_param     <- paste0("tau_res_", variable_name)
                 model_lines <- paste0(
-                    "    # Pagel's Lambda Partitioning (Scaling only) for ", variable_name, " and multiPhylo\n",
+                    "    ", lambda_param, " ~ dunif(0, 1) # Pagel lambda for ", variable_name, "\n",
+                    "    ", sigma_total_param, " ~ dunif(0, 10) # total phylogenetic SD\n",
+                    "    ", prec_param, " <- 1 / (", lambda_param, " * ", sigma_total_param,
+                        " * ", sigma_total_param, ") # phylogenetic precision\n",
+                    "    ", tau_res_param, " <- 1 / ((1 - ", lambda_param, ") * ",
+                        sigma_total_param, " * ", sigma_total_param, ") # residual precision\n",
+                    "    ", sigma_phylo_param, " <- sqrt(", lambda_param, ") * ", sigma_total_param, " # phylogenetic SD\n",
+                    "    ", sigma_res_param, " <- sqrt(1 - ", lambda_param, ") * ", sigma_total_param, " # residual SD\n",
                     "    ", raw_var, "[1:", loop_bound, "] ~ dmnorm(", zeros_name, "[1:", loop_bound, "], ",
                     "Prec_multiPhylo[1:", loop_bound, ", 1:", loop_bound, ", K])\n",
                     "    for(", j_idx, " in 1:", loop_bound, ") {\n",
@@ -457,7 +489,7 @@ jags_structure_definition.multiPhylo <- function(
                 )
             } else {
                 model_lines <- paste0(
-                    "    ", prec_param, " ~ dgamma(10, 10)\n",
+                    "    ", prec_param, " ~ dgamma(1, 1)\n",
                     "    ", raw_var, "[1:", loop_bound, "] ~ dmnorm(", zeros_name, "[1:", loop_bound, "], ",
                     "Prec_multiPhylo[1:", loop_bound, ", 1:", loop_bound, ", K])\n",
                     "    for(", j_idx, " in 1:", loop_bound, ") {\n",
