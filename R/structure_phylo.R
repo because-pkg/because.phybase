@@ -162,20 +162,40 @@ jags_structure_definition.phylo <- function(
                 "]"
             )
         } else {
-            if (use_partitioning) {
-                # [PARTITIONING] MEE-paper style: direct lambda + sigma_total, pre-computed Prec_phylo
-                # tau_u_phylo = 1/(lambda * sigma_total^2)  [phylogenetic precision]
-                # tau_res     = 1/((1-lambda) * sigma_total^2)  [residual precision]
-                # This directly samples lambda on [0,1] like Pagel (1999), avoiding the
-                # correlated (tau_u_phylo, sigma_res) posterior ridge that kills JAGS mixing.
-                lambda_param      <- paste0("lambda_", variable_name)
-                sigma_total_param <- paste0("sigma_total_", variable_name)
-                sigma_phylo_param <- paste0("sigma_", s_name, "_", variable_name)
-                sigma_res_param   <- paste0("sigma_", variable_name, "_res")
-                tau_res_param     <- paste0("tau_res_", variable_name)
+            lambda_param      <- paste0("lambda_", variable_name)
+            sigma_total_param <- paste0("sigma_total_", variable_name)
+            sigma_phylo_param <- paste0("sigma_", s_name, "_", variable_name)
+            sigma_res_param   <- paste0("sigma_", variable_name, "_res")
+            tau_res_param     <- paste0("tau_res_", variable_name)
+
+            if (use_partitioning && engine == "nimble") {
+                # [NIMBLE NON-CENTERED] z ~ N(0,I), err_raw = L_phylo %*% z
+                # L_phylo = t(chol(VCV)) pre-computed in R, passed as data.
+                # ESS on z ~ N(0,I) is maximally efficient (prior = proposal).
+                # This avoids the dmnorm funnel that causes poor mixing for large N.
+                z_var <- paste0("z_", variable_name, "_", s_name)
+                iz_idx <- paste0("i_z_", variable_name, "_", s_name)
+                model_lines <- paste0(
+                    "    ", lambda_param, " ~ dunif(0, 1) # Pagel lambda for ", variable_name, "\n",
+                    "    ", sigma_total_param, " ~ dunif(0, 10) # total phylogenetic SD\n",
+                    "    ", prec_param, " <- 1 / (", lambda_param, " * ", sigma_total_param,
+                        " * ", sigma_total_param, ") # phylogenetic precision\n",
+                    "    ", tau_res_param, " <- 1 / ((1 - ", lambda_param, ") * ",
+                        sigma_total_param, " * ", sigma_total_param, ") # residual precision\n",
+                    "    ", sigma_phylo_param, " <- sqrt(", lambda_param, ") * ", sigma_total_param, " # phylogenetic SD\n",
+                    "    ", sigma_res_param,   " <- sqrt(1 - ", lambda_param, ") * ", sigma_total_param, " # residual SD\n",
+                    "    for(", iz_idx, " in 1:", loop_bound, ") {\n",
+                    "        ", z_var, "[", iz_idx, "] ~ dnorm(0, 1)\n",
+                    "    }\n",
+                    "    for(", j_idx, " in 1:", loop_bound, ") {\n",
+                    "        ", raw_var, "[", j_idx, "] <- inprod(L_phylo[", j_idx, ", 1:", loop_bound, "], ",
+                            z_var, "[1:", loop_bound, "])\n",
+                    "        ", err_var, "[", j_idx, "] <- ", raw_var, "[", j_idx, "] * (1/sqrt(", prec_param, "))\n",
+                    "    }"
+                )
+            } else if (use_partitioning) {
+                # [JAGS / NIMBLE-OU] MEE-paper style: lambda + sigma_total + dmnorm(Prec_phylo)
                 # NOTE: Do NOT start model_lines with a comment.
-                # safe_add_lines treats lines starting with # as pass-through, bypassing
-                # declared_nodes registration. The first line must be the stochastic assignment.
                 model_lines <- paste0(
                     "    ", lambda_param, " ~ dunif(0, 1) # Pagel lambda for ", variable_name, "\n",
                     "    ", sigma_total_param, " ~ dunif(0, 10) # total phylogenetic SD\n",
@@ -323,46 +343,55 @@ prepare_structure_data.phylo <- function(
     has_ou <- "OU" %in% evo_model
 
     if (optimize) {
-        if (!quiet) {
-            message(
-                "Calculating phylogenetic precision matrix (optimize=TRUE)..."
-            )
-        }
-        P <- solve(vcv_mat)
-        data_list[["Prec_phylo"]] <- P
-
-        if (has_ou) {
+        if (engine == "nimble" && !has_ou) {
+            # NIMBLE: pre-compute lower Cholesky factor for non-centered parameterization.
+            # z ~ N(0,I) is sampled, err_raw = L_phylo %*% z gives err_raw ~ N(0, VCV).
+            # ESS (Elliptical Slice Sampler) on z ~ N(0,I) is far more efficient
+            # than ESS on err_raw ~ dmnorm(0, Prec_phylo) for large N.
+            if (!quiet) message("Calculating lower Cholesky factor for NIMBLE (optimize=TRUE)...")
+            data_list[["L_phylo"]] <- t(chol(vcv_mat))
+        } else {
             if (!quiet) {
-                message("Calculating phylogenetic OU precision grid...")
+                message(
+                    "Calculating phylogenetic precision matrix (optimize=TRUE)..."
+                )
             }
-            D <- ape::cophenetic.phylo(phylo_tree)
-            N_alpha <- attr(structure, "n_alpha")
-            if (is.null(N_alpha)) {
-                N_alpha <- 50
-            }
-            # From large alpha (fast evolution / little correlation) to small alpha (BM)
-            # Log-spaced grid
-            alpha_vals <- exp(seq(log(0.001), log(10), length.out = N_alpha))
+            P <- solve(vcv_mat)
+            data_list[["Prec_phylo"]] <- P
 
-            Prec_phylo_OU <- array(NA, dim = c(N, N, N_alpha))
-            for (k in 1:N_alpha) {
-                alpha <- alpha_vals[k]
-                if (alpha < 1e-5) {
-                    V <- vcv_mat
-                } else {
-                    V <- exp(-alpha * D) *
-                        (1 - exp(-2 * alpha * vcv_mat)) /
-                        (2 * alpha)
+            if (has_ou) {
+                if (!quiet) {
+                    message("Calculating phylogenetic OU precision grid...")
+                }
+                D <- ape::cophenetic.phylo(phylo_tree)
+                N_alpha <- attr(structure, "n_alpha")
+                if (is.null(N_alpha)) {
+                    N_alpha <- 50
+                }
+                # From large alpha (fast evolution / little correlation) to small alpha (BM)
+                # Log-spaced grid
+                alpha_vals <- exp(seq(log(0.001), log(10), length.out = N_alpha))
+
+                Prec_phylo_OU <- array(NA, dim = c(N, N, N_alpha))
+                for (k in 1:N_alpha) {
+                    alpha <- alpha_vals[k]
+                    if (alpha < 1e-5) {
+                        V <- vcv_mat
+                    } else {
+                        V <- exp(-alpha * D) *
+                            (1 - exp(-2 * alpha * vcv_mat)) /
+                            (2 * alpha)
+                    }
+
+                    # Small ridge for numerical stability
+                    diag(V) <- diag(V) + 1e-6
+                    Prec_phylo_OU[,, k] <- solve(V)
                 }
 
-                # Small ridge for numerical stability
-                diag(V) <- diag(V) + 1e-6
-                Prec_phylo_OU[,, k] <- solve(V)
+                data_list[["Prec_phylo_OU"]] <- Prec_phylo_OU
+                data_list[["N_alpha"]] <- N_alpha
+                data_list[["alpha_vals"]] <- alpha_vals
             }
-
-            data_list[["Prec_phylo_OU"]] <- Prec_phylo_OU
-            data_list[["N_alpha"]] <- N_alpha
-            data_list[["alpha_vals"]] <- alpha_vals
         }
     } else {
         # Return VCV
