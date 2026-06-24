@@ -448,6 +448,7 @@ jags_structure_definition.multiPhylo <- function(
     }
     sig_param <- sub("tau_u_", "sigma_", prec_param)
     raw_var <- paste0("err_raw_", variable_name, "_", s_name)
+    k_var <- paste0("K_tree_", s_name)
 
     # Unique loop variable for this structure and response
     j_idx <- paste0("j_", variable_name, "_", s_name)
@@ -459,8 +460,18 @@ jags_structure_definition.multiPhylo <- function(
             setup_code <- c(
                 "    # Multi-tree phylogenetic Cholesky setup (NIMBLE optimized)",
                 "    # L_multiPhylo[,,k] is passed as data",
-                paste0("    # We select the k-th lower Cholesky factor: L_multiPhylo[1:", loop_bound, ", 1:", loop_bound, ", K]")
+                paste0("    # We select the k-th lower Cholesky factor: L_multiPhylo[1:", loop_bound, ", 1:", loop_bound, ", ", k_var, "]")
             )
+            
+            if (variable_name == "err") {
+                setup_code <- c(
+                    setup_code,
+                    "    for(k in 1:Ntree) {",
+                    paste0("        prior_", k_var, "_probs[k] <- 1 / Ntree"),
+                    "    }",
+                    paste0("    ", k_var, " ~ dcat(prior_", k_var, "_probs)")
+                )
+            }
 
             z_var <- paste0("z_", variable_name, "_", s_name)
 
@@ -469,7 +480,7 @@ jags_structure_definition.multiPhylo <- function(
                 "        ", z_var, "[i_z_", variable_name, "] ~ dnorm(0, 1)\n",
                 "    }\n",
                 "    for(", j_idx, " in 1:", loop_bound, ") {\n",
-                "        ", raw_var, "[", j_idx, "] <- inprod(L_multiPhylo[", j_idx, ", 1:", loop_bound, ", K], ", z_var, "[1:", loop_bound, "])\n",
+                "        ", raw_var, "[", j_idx, "] <- inprod(L_multiPhylo[", j_idx, ", 1:", loop_bound, ", ", k_var, "], ", z_var, "[1:", loop_bound, "])\n",
                 "        ", err_var, "[", j_idx, "] <- ", raw_var, "[", j_idx, "] * (1/sqrt(", prec_param, "))\n",
                 "    }"
             )
@@ -485,13 +496,23 @@ jags_structure_definition.multiPhylo <- function(
                     model_lines_common
                 )
             }
-            prec_index <- paste0("L_multiPhylo[1:", loop_bound, ", 1:", loop_bound, ", K]")
+            prec_index <- paste0("L_multiPhylo[1:", loop_bound, ", 1:", loop_bound, ", ", k_var, "]")
         } else {
             setup_code <- c(
                 "    # Multi-tree phylogenetic Precision setup (JAGS Memory Safe)",
                 "    # Prec_multiPhylo[,,k] is passed as data",
-                paste0("    # We select the k-th precision matrix: Prec_multiPhylo[1:", loop_bound, ", 1:", loop_bound, ", K]")
+                paste0("    # We select the k-th precision matrix: Prec_multiPhylo[1:", loop_bound, ", 1:", loop_bound, ", ", k_var, "]")
             )
+
+            if (variable_name == "err") {
+                setup_code <- c(
+                    setup_code,
+                    "    for(k in 1:Ntree) {",
+                    paste0("        prior_", k_var, "_probs[k] <- 1 / Ntree"),
+                    "    }",
+                    paste0("    ", k_var, " ~ dcat(prior_", k_var, "_probs)")
+                )
+            }
 
             if (use_partitioning) {
                 # MEE-paper style: direct lambda + sigma_total, pre-computed Prec_multiPhylo[,,K]
@@ -511,7 +532,7 @@ jags_structure_definition.multiPhylo <- function(
                     "    ", sigma_phylo_param, " <- sqrt(", lambda_param, ") * ", sigma_total_param, " # phylogenetic SD\n",
                     "    ", sigma_res_param, " <- sqrt(1 - ", lambda_param, ") * ", sigma_total_param, " # residual SD\n",
                     "    ", raw_var, "[1:", loop_bound, "] ~ dmnorm(", zeros_name, "[1:", loop_bound, "], ",
-                    "Prec_multiPhylo[1:", loop_bound, ", 1:", loop_bound, ", K])\n",
+                    "Prec_multiPhylo[1:", loop_bound, ", 1:", loop_bound, ", ", k_var, "])\n",
                     "    for(", j_idx, " in 1:", loop_bound, ") {\n",
                     "        ", err_var, "[", j_idx, "] <- ", raw_var, "[", j_idx, "] * (1/sqrt(", prec_param, "))\n",
                     "    }"
@@ -520,13 +541,13 @@ jags_structure_definition.multiPhylo <- function(
                 model_lines <- paste0(
                     "    ", prec_param, " ~ dgamma(1, 1)\n",
                     "    ", raw_var, "[1:", loop_bound, "] ~ dmnorm(", zeros_name, "[1:", loop_bound, "], ",
-                    "Prec_multiPhylo[1:", loop_bound, ", 1:", loop_bound, ", K])\n",
+                    "Prec_multiPhylo[1:", loop_bound, ", 1:", loop_bound, ", ", k_var, "])\n",
                     "    for(", j_idx, " in 1:", loop_bound, ") {\n",
                     "        ", err_var, "[", j_idx, "] <- ", raw_var, "[", j_idx, "] * (1/sqrt(", prec_param, "))\n",
                     "    }"
                 )
             }
-            prec_index <- paste0("Prec_multiPhylo[1:", loop_bound, ", 1:", loop_bound, ", K]")
+            prec_index <- paste0("Prec_multiPhylo[1:", loop_bound, ", 1:", loop_bound, ", ", k_var, "]")
         }
 
         term_str <- paste0(err_var, "[", i_index, "]")
@@ -548,10 +569,21 @@ jags_structure_definition.multiPhylo <- function(
             paste0("       Sigma_phylo[1:", loop_bound, ", 1:", loop_bound, ", k] <- inverse(multiVCV[1:", loop_bound, ", 1:", loop_bound, ", k])"),
             "    }"
         )
+        
+        if (variable_name == "err") {
+            setup_code <- c(
+                setup_code,
+                "    for(k in 1:Ntree) {",
+                paste0("        prior_", k_var, "_probs[k] <- 1 / Ntree"),
+                "    }",
+                paste0("    ", k_var, " ~ dcat(prior_", k_var, "_probs)")
+            )
+        }
+        
         model_lines <- paste0(
             "    ", prec_param, " ~ dgamma(10, 10)\n",
             "    ", raw_var, "[1:", loop_bound, "] ~ dmnorm(", zeros_name, "[1:", loop_bound, "], ",
-            "Sigma_phylo[1:", loop_bound, ", 1:", loop_bound, ", K])\n",
+            "Sigma_phylo[1:", loop_bound, ", 1:", loop_bound, ", ", k_var, "])\n",
             "    for(", j_idx, " in 1:", loop_bound, ") {\n",
             "        ", err_var, "[", j_idx, "] <- ", raw_var, "[", j_idx, "] * (1/sqrt(", prec_param, "))\n",
             "    }"
