@@ -1,6 +1,6 @@
 Package: because.phybase
 Title: PhyBaSE extension for 'because'
-Version: 1.0.0
+Version: 1.0.1
 Authors@R: 
     c(person("Achaz", "von Hardenberg", , "achaz.hardenberg@unipv.it", role = c("aut", "cre"),
              comment = c(ORCID = "0000-0002-9899-1687")),
