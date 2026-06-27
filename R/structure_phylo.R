@@ -316,12 +316,25 @@ prepare_structure_data.phylo <- function(
                 # Check if unique elements exactly match tip labels
                 if (setequal(phylo_tree$tip.label, as.character(data[[col_name]]))) {
                     matching_col <- col_name
+                    target_order <- levels(as.factor(data[[col_name]]))
                     break
                 }
+            } else if (is.data.frame(data[[col_name]])) {
+                # If it is a hierarchical data list, check inside the data frame
+                df <- data[[col_name]]
+                for (inner_col in names(df)) {
+                    if (is.character(df[[inner_col]]) || is.factor(df[[inner_col]])) {
+                        if (setequal(phylo_tree$tip.label, as.character(df[[inner_col]]))) {
+                            matching_col <- inner_col
+                            target_order <- levels(as.factor(df[[inner_col]]))
+                            break
+                        }
+                    }
+                }
+                if (!is.null(matching_col)) break
             }
         }
         if (!is.null(matching_col)) {
-            target_order <- levels(as.factor(data[[matching_col]]))
             if (!quiet) message(sprintf("Aligning phylogeny to data column '%s'", matching_col))
         }
     }
