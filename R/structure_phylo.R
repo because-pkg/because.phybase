@@ -215,6 +215,7 @@ jags_structure_definition.phylo <- function(
                 # [ADDITIVE] Standard random effect prior (fallback when multiple structures)
                 model_lines <- paste0(
                     "    ", prec_param, " ~ dgamma(1, 1)\n",
+                    "    ", sigma_phylo_param, " <- 1/sqrt(", prec_param, ")\n",
                     "    ", raw_var, "[1:", loop_bound, "] ~ dmnorm(", zeros_name, "[1:", loop_bound, "], ",
                     "Prec_phylo[1:", loop_bound, ", 1:", loop_bound, "])\n",
                     "    for(", j_idx, " in 1:", loop_bound, ") {\n",
@@ -504,8 +505,10 @@ jags_structure_definition.multiPhylo <- function(
                     model_lines_common
                 )
             } else {
+                sigma_phylo_param <- paste0("sigma_", s_name, "_", variable_name)
                 model_lines <- paste0(
                     "    ", prec_param, " ~ dgamma(1, 1)\n",
+                    "    ", sigma_phylo_param, " <- 1/sqrt(", prec_param, ")\n",
                     model_lines_common
                 )
             }
@@ -553,6 +556,7 @@ jags_structure_definition.multiPhylo <- function(
             } else {
                 model_lines <- paste0(
                     "    ", prec_param, " ~ dgamma(1, 1)\n",
+                    "    ", sigma_phylo_param, " <- 1/sqrt(", prec_param, ")\n",
                     "    ", raw_var, "[1:", loop_bound, "] ~ dmnorm(", zeros_name, "[1:", loop_bound, "], ",
                     "Prec_multiPhylo[1:", loop_bound, ", 1:", loop_bound, ", ", k_var, "])\n",
                     "    for(", j_idx, " in 1:", loop_bound, ") {\n",
