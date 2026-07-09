@@ -779,6 +779,9 @@ def phylo_transform(numpyro, jnp, jax, dist, var, group_name, num_groups, matrix
     z_scaled = z_raw * jnp.sqrt(eigvals_safe)
     z_group = jnp.dot(eigvecs, z_scaled)
     
+    # Mean-center to resolve confounding with the global intercept
+    z_group = z_group - jnp.mean(z_group)
+    
     # Return z_group and the UNCHANGED sigma.
     # because_py will do: u_group = z_group * sigma
     # This results in covariance = sigma^2 * Phylo_Cov
@@ -830,6 +833,9 @@ def multiPhylo_transform(numpyro, jnp, jax, dist, var, group_name, num_groups, m
     
     # Batched matrix-vector multiplication
     z_group = jnp.einsum('...ij,...j->...i', eigvecs, z_scaled)
+    
+    # Mean-center along the species axis to resolve confounding with the global intercept
+    z_group = z_group - jnp.mean(z_group, axis=-1, keepdims=True)
     
     # Return z_group and the UNCHANGED sigma.
     return z_group, sigma
