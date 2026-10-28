@@ -308,7 +308,8 @@ prepare_structure_data.phylo <- function(
     target_order <- NULL
     
     if (!is.null(args$row_ids) && setequal(phylo_tree$tip.label, as.character(args$row_ids))) {
-        target_order <- levels(as.factor(args$row_ids))
+        target_order <- as.character(args$row_ids)
+        if (any(duplicated(target_order))) target_order <- unique(target_order)
         if (!quiet) message("Aligning phylogeny to provided row_ids (id_col).")
     } else if (!is.null(data)) {
         matching_col <- NULL
@@ -317,7 +318,8 @@ prepare_structure_data.phylo <- function(
                 # Check if unique elements exactly match tip labels
                 if (setequal(phylo_tree$tip.label, as.character(data[[col_name]]))) {
                     matching_col <- col_name
-                    target_order <- levels(as.factor(data[[col_name]]))
+                    target_order <- as.character(data[[col_name]])
+                    if (any(duplicated(target_order))) target_order <- unique(target_order)
                     break
                 }
             } else if (is.data.frame(data[[col_name]])) {
@@ -327,7 +329,8 @@ prepare_structure_data.phylo <- function(
                     if (is.character(df[[inner_col]]) || is.factor(df[[inner_col]])) {
                         if (setequal(phylo_tree$tip.label, as.character(df[[inner_col]]))) {
                             matching_col <- inner_col
-                            target_order <- levels(as.factor(df[[inner_col]]))
+                            target_order <- as.character(df[[inner_col]])
+                            if (any(duplicated(target_order))) target_order <- unique(target_order)
                             break
                         }
                     }
@@ -663,7 +666,8 @@ prepare_structure_data.multiPhylo <- function(
     target_order <- NULL
     
     if (!is.null(args$row_ids) && setequal(structure[[1]]$tip.label, as.character(args$row_ids))) {
-        target_order <- levels(as.factor(args$row_ids))
+        target_order <- as.character(args$row_ids)
+        if (any(duplicated(target_order))) target_order <- unique(target_order)
         if (!quiet) message("Aligning multiPhylo to provided row_ids (id_col).")
     } else if (!is.null(data)) {
         matching_col <- NULL
@@ -671,12 +675,26 @@ prepare_structure_data.multiPhylo <- function(
             if (is.character(data[[col_name]]) || is.factor(data[[col_name]])) {
                 if (setequal(structure[[1]]$tip.label, as.character(data[[col_name]]))) {
                     matching_col <- col_name
+                    target_order <- as.character(data[[col_name]])
+                    if (any(duplicated(target_order))) target_order <- unique(target_order)
                     break
                 }
+            } else if (is.data.frame(data[[col_name]])) {
+                df <- data[[col_name]]
+                for (inner_col in names(df)) {
+                    if (is.character(df[[inner_col]]) || is.factor(df[[inner_col]])) {
+                        if (setequal(structure[[1]]$tip.label, as.character(df[[inner_col]]))) {
+                            matching_col <- inner_col
+                            target_order <- as.character(df[[inner_col]])
+                            if (any(duplicated(target_order))) target_order <- unique(target_order)
+                            break
+                        }
+                    }
+                }
+                if (!is.null(matching_col)) break
             }
         }
         if (!is.null(matching_col)) {
-            target_order <- levels(as.factor(data[[matching_col]]))
             if (!quiet) message(sprintf("Aligning multiPhylo to data column '%s'", matching_col))
         }
     }

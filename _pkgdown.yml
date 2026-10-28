@@ -7,12 +7,15 @@ template:
     navbar-bg: "#009F7F"
 navbar:
   structure:
-    left: [home, reference, articles]
+    left: [home, reference, articles, blog]
     right: [because, search, github]
   components:
     because:
       text: because
       href: https://because-pkg.github.io
+    blog:
+      text: "Blog"
+      href: https://because-pkg.github.io/because/articles/announcing-because.html
 
 reference:
   - title: "S3 Methods for Phylogenetic Structures"
