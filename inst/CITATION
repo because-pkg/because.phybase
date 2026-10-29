@@ -7,9 +7,10 @@ citEntry(
     person("Achaz", "von Hardenberg", role = c("aut", "cre")),
     person("Alejandro", "Gonzalez-Voyer", role = "aut")
   ),
-  year = "2025",
-  note = "R package version 1.0.0",
-  url = "https://because-pkg.github.io/because.phybase/"
+  year = "2026",
+  note = "R package version 1.0.2",
+  url = "https://because-pkg.github.io/because.phybase/",
+  textVersion = "von Hardenberg, A., & Gonzalez-Voyer, A. (2026). because.phybase: Phylogenetic Structural Equation Models (PhyBaSE) in R. R package version 1.0.2 https://because-pkg.github.io/because.phybase/"
 )
 
 citEntry(entry = "Article",
