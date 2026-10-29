@@ -1,5 +1,6 @@
 # because.phybase 1.0.2 (2026-10-28)
 
+* **Fix MultiPhylo JAGS Model Definition**: Fixed an uninitialized variable error (`object 'sigma_phylo_param' not found`) in `jags_structure_definition.multiPhylo()` when `use_partitioning` is disabled (such as additive error models or non-Gaussian paths).
 * **Preserve Observation Row Order in Structure Preparation**: `prepare_structure_data.phylo()` and `prepare_structure_data.multiPhylo()` now align phylogeny tip labels to data rows using the exact original observation row order (`as.character(unique(args$row_ids))`) rather than forcing alphabetical sorting (`levels(as.factor())`). This prevents loss or distortion of phylogenetic signal when data rows are not pre-sorted alphabetically.
 * **MultiPhylo Data Compatibility**: Added support for nested data frames when matching tip labels across multiPhylo tree lists.
 

@@ -466,6 +466,7 @@ jags_structure_definition.multiPhylo <- function(
     sig_param <- sub("tau_u_", "sigma_", prec_param)
     raw_var <- paste0("err_raw_", variable_name, "_", s_name)
     k_var <- paste0("K_tree_", s_name)
+    sigma_phylo_param <- paste0("sigma_", s_name, "_", variable_name)
 
     # Unique loop variable for this structure and response
     j_idx <- paste0("j_", variable_name, "_", s_name)
