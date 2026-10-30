@@ -55,7 +55,7 @@ jobs:
           JAGS_VERSION: "4.3.2"
         run: |
           $progressPreference = 'silentlyContinue'
-          $jagsUrl = "https://sourceforge.net/projects/mcmc-jags/files/JAGS/4.x/Windows/JAGS-$env:JAGS_VERSION.exe/download"
+          $jagsUrl = "https://github.com/r-windows/JAGS/releases/download/installers/JAGS-$env:JAGS_VERSION-x86_64.exe"
           $installer = "$env:TEMP\JAGS-$env:JAGS_VERSION.exe"
           # Retry download up to 3 times
           $maxRetries = 3
@@ -70,7 +70,7 @@ jobs:
             }
           }
           if (-not (Test-Path $installer)) { throw "JAGS installer download failed" }
-          $proc = Start-Process -FilePath $installer -ArgumentList "/S" -Wait -PassThru
+          $proc = Start-Process -FilePath $installer -ArgumentList '/S','/AllUsers' -Wait -PassThru
           if ($proc.ExitCode -ne 0) { throw "JAGS installer exited with code $($proc.ExitCode)" }
           # Add JAGS to PATH for rjags
           $jagsPath = "C:\Program Files\JAGS\JAGS-$env:JAGS_VERSION"
