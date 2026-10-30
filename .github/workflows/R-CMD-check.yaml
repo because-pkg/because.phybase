@@ -40,21 +40,14 @@ jobs:
       - name: Install system dependencies (macOS)
         if: runner.os == 'macOS'
         run: |
-          brew install jags
-          # On Apple Silicon, Homebrew installs to /opt/homebrew; create symlinks
-          # so rjags binaries compiled with /usr/local paths can find libjags
-          JAGS_PREFIX="$(brew --prefix)"
-          JAGS_LIB="${JAGS_PREFIX}/lib/libjags.4.dylib"
-          if [ ! -f "$JAGS_LIB" ]; then
-            echo "ERROR: JAGS library not found at $JAGS_LIB" >&2; exit 1
+          curl --retry 3 --fail-with-body -sSLO https://github.com/autobrew/bundler/releases/download/jags-4.3.2/JAGS-4.3.2.pkg
+          sudo installer -pkg JAGS-4.3.2.pkg -target /
+          rm -f JAGS-4.3.2.pkg
+          if [ -d "/opt/R/arm64/lib/pkgconfig" ]; then
+            sudo cp -f /usr/local/lib/pkgconfig/jags.pc /opt/R/arm64/lib/pkgconfig/ || true
           fi
-          sudo mkdir -p /usr/local/lib
-          sudo ln -sf "$JAGS_LIB" /usr/local/lib/libjags.4.dylib
-          # Symlink JAGS modules directory so rjags can find module .so files
-          JAGS_MODULES="${JAGS_PREFIX}/lib/JAGS"
-          if [ -d "$JAGS_MODULES" ]; then
-            sudo ln -sf "$JAGS_MODULES" /usr/local/lib/JAGS
-          fi
+          echo "JAGS_HOME=/usr/local" >> $GITHUB_ENV
+          echo "/usr/local/bin" >> $GITHUB_PATH
 
       - name: Install system dependencies (Windows)
         if: runner.os == 'Windows'
@@ -62,7 +55,7 @@ jobs:
           JAGS_VERSION: "4.3.2"
         run: |
           $progressPreference = 'silentlyContinue'
-          $jagsUrl = "https://sourceforge.net/projects/mcmc-jags/files/JAGS/4.x/Windows/JAGS-$env:JAGS_VERSION.exe/download"
+          $jagsUrl = "https://github.com/r-windows/JAGS/releases/download/installers/JAGS-$env:JAGS_VERSION-x86_64.exe"
           $installer = "$env:TEMP\JAGS-$env:JAGS_VERSION.exe"
           # Retry download up to 3 times
           $maxRetries = 3
@@ -77,7 +70,7 @@ jobs:
             }
           }
           if (-not (Test-Path $installer)) { throw "JAGS installer download failed" }
-          $proc = Start-Process -FilePath $installer -ArgumentList "/S" -Wait -PassThru
+          $proc = Start-Process -FilePath $installer -ArgumentList '/S','/AllUsers' -Wait -PassThru
           if ($proc.ExitCode -ne 0) { throw "JAGS installer exited with code $($proc.ExitCode)" }
           # Add JAGS to PATH for rjags
           $jagsPath = "C:\Program Files\JAGS\JAGS-$env:JAGS_VERSION"

@@ -25,6 +25,10 @@ reference:
       - jags_structure_definition.multiPhylo
       - prepare_structure_data.phylo
       - prepare_structure_data.multiPhylo
+      - numpyro_structure_definition.phylo
+      - numpyro_structure_definition.multiPhylo
+      - get_structure_name_hook.multiPhylo
+      - evo_model
   - title: "Data"
     contents:
       - rhino.dat
