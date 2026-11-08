@@ -1,5 +1,22 @@
 # Package index
 
+## Phylogenetic Comparative Tools & Diagnostics
+
+Functions for evolutionary models, multi-tree ensembles, and sensitivity
+diagnostics.
+
+- [`evo_model()`](https://because-pkg.github.io/because.phybase/reference/evo_model.md)
+  : Attach Evolutionary Model Specifications to Phylogenetic Structures
+
+- [`tree_control()`](https://because-pkg.github.io/because.phybase/reference/tree_control.md)
+  :
+
+  Configure Multi-Tree (`multiPhylo`) Sampling and Ensemble Options
+
+- [`check_multiphylo()`](https://because-pkg.github.io/because.phybase/reference/check_multiphylo.md)
+  : Check Multi-Tree Convergence and Phylogenetic Sensitivity
+  Diagnostics
+
 ## S3 Methods for Phylogenetic Structures
 
 Methods extending the because engine for `phylo` and `multiPhylo`

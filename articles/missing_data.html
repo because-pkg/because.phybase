@@ -26,7 +26,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">because.phybase</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.1.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -43,6 +43,7 @@
     <li><a class="dropdown-item" href="../articles/phylogenetic_models.html">Phylogenetic Models</a></li>
   </ul>
 </li>
+<li class="nav-item"><a class="external-link nav-link" href="https://because-pkg.github.io/because/articles/announcing-because.html">Blog</a></li>
       </ul>
 <ul class="navbar-nav">
 <li class="nav-item"><a class="external-link nav-link" href="https://because-pkg.github.io">because</a></li>
@@ -66,7 +67,7 @@
                         <h4 data-toc-skip class="author">Achaz von
 Hardenberg</h4>
             
-            <h4 data-toc-skip class="date">2026-05-31</h4>
+            <h4 data-toc-skip class="date">2026-11-08</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/because-pkg/because.phybase/blob/main/vignettes/missing_data.Rmd" class="external-link"><code>vignettes/missing_data.Rmd</code></a></small>
       <div class="d-none name"><code>missing_data.Rmd</code></div>
@@ -139,11 +140,11 @@ Distance (<code>DD</code>).</p>
 <div class="section level2">
 <h2 id="running-the-model">Running the Model<a class="anchor" aria-label="anchor" href="#running-the-model"></a>
 </h2>
-<p>When we run <code><a href="https://because-pkg.github.io/because/reference/because.html" class="external-link">because()</a></code> with missing data, it
+<p>When we run <code><a href="https://rdrr.io/pkg/because/man/because.html" class="external-link">because()</a></code> with missing data, it
 automatically detects the <code>NA</code> values and adjusts the JAGS
 model structure.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">sem8_na.bc</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://because-pkg.github.io/because/reference/because.html" class="external-link">because</a></span><span class="op">(</span></span>
+<code class="sourceCode R"><span><span class="va">sem8_na.bc</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/because/man/because.html" class="external-link">because</a></span><span class="op">(</span></span>
 <span>  equations <span class="op">=</span> <span class="va">sem8.eq</span>,</span>
 <span>  data <span class="op">=</span> <span class="va">rhino_na</span>,</span>
 <span>  structure <span class="op">=</span> <span class="va">rhino.tree</span></span>
@@ -225,14 +226,14 @@ phylogenetic information available.</p></li>
 </h2>
 <p>Since the missing values are now parameters in the model, we can
 actually inspect their estimated values (posterior distributions). To do
-this, you must run <code><a href="https://because-pkg.github.io/because/reference/because.html" class="external-link">because()</a></code> with the argument
+this, you must run <code><a href="https://rdrr.io/pkg/because/man/because.html" class="external-link">because()</a></code> with the argument
 <code>monitor = "all"</code>. This ensures that the imputed stochastic
 nodes are saved in the output.</p>
-<p>You can use the helper function <code><a href="https://because-pkg.github.io/because/reference/extract_imputed.html" class="external-link">extract_imputed()</a></code> to
+<p>You can use the helper function <code><a href="https://rdrr.io/pkg/because/man/extract_imputed.html" class="external-link">extract_imputed()</a></code> to
 easily retrieve these values:</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Run strictly monitoring 'all' parameters to get imputed values</span></span>
-<span><span class="va">sem8_na_monitored.bc</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://because-pkg.github.io/because/reference/because.html" class="external-link">because</a></span><span class="op">(</span></span>
+<span><span class="va">sem8_na_monitored.bc</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/because/man/because.html" class="external-link">because</a></span><span class="op">(</span></span>
 <span>  equations <span class="op">=</span> <span class="va">sem8.eq</span>,</span>
 <span>  data <span class="op">=</span> <span class="va">rhino_na</span>,</span>
 <span>  structure <span class="op">=</span> <span class="va">rhino.tree</span>,</span>
@@ -240,7 +241,7 @@ easily retrieve these values:</p>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Extract posterior summaries for imputed values</span></span>
-<span><span class="va">imputed_values</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://because-pkg.github.io/because/reference/extract_imputed.html" class="external-link">extract_imputed</a></span><span class="op">(</span><span class="va">sem8_na_monitored.bc</span><span class="op">)</span></span>
+<span><span class="va">imputed_values</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/because/man/extract_imputed.html" class="external-link">extract_imputed</a></span><span class="op">(</span><span class="va">sem8_na_monitored.bc</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># View the first few imputed values</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">imputed_values</span><span class="op">)</span></span>
@@ -279,7 +280,7 @@ response variable (<code>BM ~ 1</code>) and also imputed.</p>
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.1.</p>
 </div>
 
     </footer>

@@ -29,9 +29,9 @@ automatically matches the species names in the data and tree: you only
 need to ensure that the species names in the data frame column specified
 by `species` match the tip labels in the tree and provide the name of
 the species column to the
-[`because()`](https://because-pkg.github.io/because/reference/because.html)
-function through the `id_col` argument. Also, you do not need to rescale
-the total tree length to 1 (needed for a correct estimation of Pagel’s
+[`because()`](https://rdrr.io/pkg/because/man/because.html) function
+through the `id_col` argument. Also, you do not need to rescale the
+total tree length to 1 (needed for a correct estimation of Pagel’s
 lambda parameter), as `because` will handle this internally.
 
 So, let’s specify the structural equations of the best model (sem8) as
@@ -51,12 +51,12 @@ plot_dag(sem8_eq)
 ![](figures/sem8.png)
 
 Now we can fit the model with
-[`because()`](https://because-pkg.github.io/because/reference/because.html)
-including the phylogenetic tree with the `structure` argument. Also, as
-this is a more complex model than in the previous examples, to speed up
-the model fitting we will run 3 chains in parallel using the
-`parallel = TRUE` and `n.cores = 3` arguments. Also we will request the
-WAIC information criterion to be computed by setting `WAIC = TRUE`:
+[`because()`](https://rdrr.io/pkg/because/man/because.html) including
+the phylogenetic tree with the `structure` argument. Also, as this is a
+more complex model than in the previous examples, to speed up the model
+fitting we will run 3 chains in parallel using the `parallel = TRUE` and
+`n.cores = 3` arguments. Also we will request the WAIC information
+criterion to be computed by setting `WAIC = TRUE`:
 
 ``` r
 
@@ -133,15 +133,15 @@ materials of the paper).
 If you are familiar with the output obtained from that model, you may
 however have noticed that besides Pagel’s $`\lambda`$ parameters for
 each response variable, with
-[`because()`](https://because-pkg.github.io/because/reference/because.html)
-we also get estimates of the standard deviations of the phylogenetic and
-residual components (`sigma_[RESP]_phylo` and `sigma_[RESP]_res`,
-respectively). These are estimated because `because` uses an optimised
-random effect formulation to improve MCMC and significantly reduce
-runtime. While standard phylogenetic models must invert the covariance
-matrix at every iteration (as $`\lambda`$ changes), the random effect
-approach is mathematically equivalent but computationally more efficent.
-`because` decomposes the response into three additive components:
+[`because()`](https://rdrr.io/pkg/because/man/because.html) we also get
+estimates of the standard deviations of the phylogenetic and residual
+components (`sigma_[RESP]_phylo` and `sigma_[RESP]_res`, respectively).
+These are estimated because `because` uses an optimised random effect
+formulation to improve MCMC and significantly reduce runtime. While
+standard phylogenetic models must invert the covariance matrix at every
+iteration (as $`\lambda`$ changes), the random effect approach is
+mathematically equivalent but computationally more efficent. `because`
+decomposes the response into three additive components:
 
 ``` math
 y_i = \mu_i + u_i + \epsilon_i
@@ -243,23 +243,23 @@ that the the hypothesised causal structure is consistent with the data.
 In von Hardenberg and Gonzalez-Voyer (2025), we showed how PhyBaSE
 models can be specified to account for measurement error in the traits.
 These models can also be fitted with
-[`because()`](https://because-pkg.github.io/because/reference/because.html).
-In the case you have available repeated measures per species, it is
-sufficient to provide the data frame with all measurements
-(i.e. multiple rows per species) and specify the `id_col` argument to
-indicate the species identifier column.
-[`because()`](https://because-pkg.github.io/because/reference/because.html)
-will automatically format the data to create a response matrix with
-species in rows and replicates in columns, padding with `NA`s as
-necessary. We will use the same data simulated in von Hardenberg and
-Gonzalez-Voyer (2025) for this example. Each trait was transformed to a
-distribution with mean equal to the original species trait value in
-`rhino.dat` and SD equal to a proportion (25%) of the among-species
-variance for that trait. Then 10 repeated measures were sampled for each
-species. The resulting data frame `RhinoMulti.dat` contains 1000 rows
-(10 replicates for each of the 100 species) and 6 columns (species
-identifier and 5 traits). Let’s load the data and fit the same model as
-before accounting for the repeated measures:
+[`because()`](https://rdrr.io/pkg/because/man/because.html). In the case
+you have available repeated measures per species, it is sufficient to
+provide the data frame with all measurements (i.e. multiple rows per
+species) and specify the `id_col` argument to indicate the species
+identifier column.
+[`because()`](https://rdrr.io/pkg/because/man/because.html) will
+automatically format the data to create a response matrix with species
+in rows and replicates in columns, padding with `NA`s as necessary. We
+will use the same data simulated in von Hardenberg and Gonzalez-Voyer
+(2025) for this example. Each trait was transformed to a distribution
+with mean equal to the original species trait value in `rhino.dat` and
+SD equal to a proportion (25%) of the among-species variance for that
+trait. Then 10 repeated measures were sampled for each species. The
+resulting data frame `RhinoMulti.dat` contains 1000 rows (10 replicates
+for each of the 100 species) and 6 columns (species identifier and 5
+traits). Let’s load the data and fit the same model as before accounting
+for the repeated measures:
 
 ``` r
 
@@ -325,8 +325,7 @@ summary(RhinoMulti.bc)
 In von Hardenberg and Gonzalez-Voyer (2025) we showed also how to
 account for measurement error when only a single observation per species
 is available, but the measurement standard error is known. This can also
-be done with
-[`because()`](https://because-pkg.github.io/because/reference/because.html)
+be done with [`because()`](https://rdrr.io/pkg/because/man/because.html)
 by providing for each trait a second collumn called `[TRAIT]_se`
 containing the standard error of the measurements for each species.
 
@@ -384,47 +383,123 @@ summary(RhinoMulti_se.bc)
 # sigma_NL_res    2184
 ```
 
-## Accounting for uncertainity in the phylogenetic tree
+## Accounting for uncertainty in the phylogenetic tree (`multiPhylo`)
 
 In cases where there is uncertainty about the phylogenetic relationships
-among species, `because` allows users to fit models across a sample of
-trees as described in von Hardenberg and Gonzalez Voyer, 2025). With
-`because` this becomes trivial: You just need to provide a list of
-phylogenetic trees (class `multiPhylo`) to the `structure` argument
-instead of a single tree; `because` will then randomly sample one tree
-from the list at each MCMC iteration, effectively integrating over
-phylogenetic uncertainty when estimating model parameters.
+among species, `because` and `because.phybase` allow users to fit models
+across a posterior sample of trees (an `ape::multiPhylo` object). Simply
+pass the `multiPhylo` object to the `structure` argument:
 
-### High-Performance `multiPhylo` Models with NIMBLE
+### 1. Deterministic Phylogenetic Ensemble (`tree_method = "ensemble"`, Default)
 
-When passing a large `multiPhylo` object (e.g., hundreds of trees for
-hundreds of species), the default JAGS engine may run very slowly. This
-is because JAGS is forced to evaluate large, dense variance-covariance
-matrices repeatedly as the MCMC sampler jumps between trees.
+Starting in `because.phybase` v1.1.0, passing a `multiPhylo` object to
+`structure` defaults to **`tree_method = "ensemble"`** with
+**`n.chains = 2L`**. This runs `n.chains` independent MCMC chains on
+each of the $`M`$ trees ($`M \times 2`$ chains total) and pools the
+posterior draws with exact equal weight ($`1/M`$ per tree, Bayesian
+Model Averaging):
 
-To achieve massive speedups, we highly recommend using the **NIMBLE**
-engine (`engine = "nimble"`) for models containing `multiPhylo` objects.
-When using NIMBLE, `because.phybase` automatically switches to a
-highly-optimized Non-Centered Parameterization using pre-calculated
-Cholesky factors. NIMBLE compiles this directly into C++ code, allowing
-the MCMC to bypass heavy matrix decompositions entirely. This allows
-your models to run exponentially faster without exhausting your system
-memory.
+- In **NumPyro** (`engine = "numpyro"`), JAX compiles the pure `NUTS`
+  kernel **only once** and executes up to `n.cores` chains
+  simultaneously across trees in parallel waves.
+- Because each tree has $`\ge 2`$ chains,
+  [`summary()`](https://rdrr.io/r/base/summary.html) and
+  [`check_multicov()`](https://rdrr.io/pkg/because/man/check_multicov.html)
+  (or
+  [`check_multiphylo()`](https://because-pkg.github.io/because.phybase/reference/check_multiphylo.md))
+  cleanly separate **within-tree MCMC convergence (`Rhat_MCMC`)** from
+  **between-tree phylogenetic sensitivity (`Rhat_tree`)**.
 
 ``` r
 
-# Ensure you have the 'nimble' package installed from CRAN
-# install.packages("nimble")
-
-fit_multi_fast <- because(
-    equations = sem8_eq,
-    data = rhino.dat,
-    structure = rhino.multi.tree, # A multiPhylo object
-    id_col = "SP",
-    engine = "nimble", # Use NIMBLE for high-performance Cholesky parameterization
-    parallel = TRUE,
-    n.cores = 3
+# Default: Ensemble mode (M trees x 2 chains/tree) parallelized across 8 CPU cores
+fit_multi <- because(
+    equations       = sem8_eq,
+    data            = rhino.dat,
+    structure       = rhino.multi.tree, # A multiPhylo object
+    id_col          = "SP",
+    engine          = "numpyro",
+    n.cores         = 8,                # Automatically enables parallel execution across 8 cores
+    tree_method     = "ensemble",       # Default for multiPhylo
+    n.chains        = 2                 # Default: 2 chains per tree (M x 2 chains total)
 )
+
+summary(fit_multi)        # Reports both Rhat (within-tree) and Rhat_tree (between-tree)
+check_multicov(fit_multi) # Full multiPhylo BMA & phylogenetic sensitivity report + plot
+```
+
+### 2. Multi-Backbone Phylogenetic Ensembles
+
+Phylogenetic uncertainty often extends beyond branch lengths to deep
+topological disagreements between competing backbone hypotheses (e.g.,
+Jetz et al. vs. McTavish et al. for birds).
+
+You can supply competing backbones directly as a named list to
+`structure`:
+
+``` r
+
+# Direct named list of candidate backbones (no wrappers required)
+backbones <- list(
+  Jetz     = jetz_trees,      # multiPhylo of 10 trees
+  McTavish = mctavish_trees   # multiPhylo of 10 trees
+)
+
+fit_bb <- because(
+  equations       = sem8_eq,
+  data            = rhino.dat,
+  structure       = backbones,
+  id_col          = "SP",
+  engine          = "numpyro",
+  n.chains        = 2,        # 2 chains per tree (20 trees x 2 = 40 chains total)
+  n.cores         = 8
+)
+```
+
+`because` automatically flattens candidate trees into an ensemble and
+partitions variance across distinct levels via
+[`check_multicov()`](https://rdrr.io/pkg/because/man/check_multicov.html): -
+**$`\hat{R}_{\text{MCMC}}`$**: MCMC convergence within each individual
+tree ($`\max_k \hat{R}_k < 1.05`$). - **$`\hat{R}_{\text{phylo}}`$
+(Within-Backbone)**: Sensitivity to branch length and dating noise
+within each backbone. - **$`\hat{R}_{\text{backbone}}`$
+(Between-Backbone)**: Sensitivity to deep topological conflict across
+backbones. - **Law of Total Variance Decomposition (% Uncertainty)**:
+Orthogonally partitions total posterior variance
+$`\text{Var}_{\text{total}}(\theta)`$ into `% MCMC` (data sampling
+variance), `% Tree` (within-backbone dating/branch lengths), and
+`% Backbone` (hypotheses conflict), summing to exactly 100%.
+
+``` r
+
+# Publication-ready diagnostic report and 2-panel figure
+check_multicov(fit_bb, plot = TRUE)
+```
+
+### 3. Categorical Tree-Index Sampling (`tree_method = "dcat"`)
+
+If you prefer the stochastic tree-index sampling approach
+(`K_tree ~ dcat(p[])`) from von Hardenberg and Gonzalez-Voyer (2025),
+set `tree_method = "dcat"` in
+[`because()`](https://rdrr.io/pkg/because/man/because.html). In NumPyro,
+`tree_method = "dcat"` automatically applies **Spectral Gaussian
+Marginalization** to observed Gaussian equations and aligns eigenvector
+signs across trees:
+
+``` r
+
+fit_multi_dcat <- because(
+    equations   = sem8_eq,
+    data        = rhino.dat,
+    structure   = rhino.multi.tree,
+    id_col      = "SP",
+    engine      = "numpyro",
+    tree_method = "dcat",
+    n.chains    = 4,
+    n.cores     = 4
+)
+
+check_multicov(fit_multi_dcat) # Inspects within-chain tree jumping and tree weights
 ```
 
 ## References

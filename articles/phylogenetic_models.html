@@ -26,7 +26,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">because.phybase</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.1.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -43,6 +43,7 @@
     <li><a class="dropdown-item" href="../articles/phylogenetic_models.html">Phylogenetic Models</a></li>
   </ul>
 </li>
+<li class="nav-item"><a class="external-link nav-link" href="https://because-pkg.github.io/because/articles/announcing-because.html">Blog</a></li>
       </ul>
 <ul class="navbar-nav">
 <li class="nav-item"><a class="external-link nav-link" href="https://because-pkg.github.io">because</a></li>
@@ -66,7 +67,7 @@
                         <h4 data-toc-skip class="author">Achaz von
 Hardenberg</h4>
             
-            <h4 data-toc-skip class="date">2026-05-31</h4>
+            <h4 data-toc-skip class="date">2026-11-08</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/because-pkg/because.phybase/blob/main/vignettes/phylogenetic_models.Rmd" class="external-link"><code>vignettes/phylogenetic_models.Rmd</code></a></small>
       <div class="d-none name"><code>phylogenetic_models.Rmd</code></div>
@@ -100,7 +101,7 @@ the phylogenetic tree (class <code>phylo</code>) via the
 automatically matches the species names in the data and tree: you only
 need to ensure that the species names in the data frame column specified
 by <code>species</code> match the tip labels in the tree and provide the
-name of the species column to the <code><a href="https://because-pkg.github.io/because/reference/because.html" class="external-link">because()</a></code> function
+name of the species column to the <code><a href="https://rdrr.io/pkg/because/man/because.html" class="external-link">because()</a></code> function
 through the <code>id_col</code> argument. Also, you do not need to
 rescale the total tree length to 1 (needed for a correct estimation of
 Pagel’s lambda parameter), as <code>because</code> will handle this
@@ -114,9 +115,9 @@ as fitted by von Hardenberg and Gonzalez-Voyer (2025):</p>
 <span>    <span class="va">DD</span> <span class="op">~</span> <span class="va">NL</span></span>
 <span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu"><a href="https://because-pkg.github.io/because/reference/plot_dag.html" class="external-link">plot_dag</a></span><span class="op">(</span><span class="va">sem8_eq</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu"><a href="https://rdrr.io/pkg/because/man/plot_dag.html" class="external-link">plot_dag</a></span><span class="op">(</span><span class="va">sem8_eq</span><span class="op">)</span></span></code></pre></div>
 <p><img src="figures/sem8.png" class="r-plt" alt="" width="100%"></p>
-<p>Now we can fit the model with <code><a href="https://because-pkg.github.io/because/reference/because.html" class="external-link">because()</a></code> including the
+<p>Now we can fit the model with <code><a href="https://rdrr.io/pkg/because/man/because.html" class="external-link">because()</a></code> including the
 phylogenetic tree with the <code>structure</code> argument. Also, as
 this is a more complex model than in the previous examples, to speed up
 the model fitting we will run 3 chains in parallel using the
@@ -124,7 +125,7 @@ the model fitting we will run 3 chains in parallel using the
 Also we will request the WAIC information criterion to be computed by
 setting <code>WAIC = TRUE</code>:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">fit_sem8</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://because-pkg.github.io/because/reference/because.html" class="external-link">because</a></span><span class="op">(</span></span>
+<code class="sourceCode R"><span><span class="va">fit_sem8</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/because/man/because.html" class="external-link">because</a></span><span class="op">(</span></span>
 <span>    equations <span class="op">=</span> <span class="va">sem8_eq</span>,</span>
 <span>    data <span class="op">=</span> <span class="va">rhino.dat</span>,</span>
 <span>    structure <span class="op">=</span> <span class="va">rhino.tree</span>,</span>
@@ -195,7 +196,7 @@ materials of the paper).</p>
 <p>If you are familiar with the output obtained from that model, you may
 however have noticed that besides Pagel’s
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>λ</mi><annotation encoding="application/x-tex">\lambda</annotation></semantics></math>
-parameters for each response variable, with <code><a href="https://because-pkg.github.io/because/reference/because.html" class="external-link">because()</a></code> we
+parameters for each response variable, with <code><a href="https://rdrr.io/pkg/because/man/because.html" class="external-link">because()</a></code> we
 also get estimates of the standard deviations of the phylogenetic and
 residual components (<code>sigma_[RESP]_phylo</code> and
 <code>sigma_[RESP]_res</code>, respectively). These are estimated
@@ -259,7 +260,7 @@ more reliable model comparisons.</p>
 (We will set WAIC = FALSE here to speed up the computation, as we do not
 need to compare models):</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">test_sem8_dsep</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://because-pkg.github.io/because/reference/because.html" class="external-link">because</a></span><span class="op">(</span></span>
+<code class="sourceCode R"><span><span class="va">test_sem8_dsep</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/because/man/because.html" class="external-link">because</a></span><span class="op">(</span></span>
 <span>    equations <span class="op">=</span> <span class="va">sem8_eq</span>,</span>
 <span>    data <span class="op">=</span> <span class="va">rhino.dat</span>,</span>
 <span>    structure <span class="op">=</span> <span class="va">rhino.tree</span>,</span>
@@ -312,11 +313,11 @@ data.</p>
 </h3>
 <p>In von Hardenberg and Gonzalez-Voyer (2025), we showed how PhyBaSE
 models can be specified to account for measurement error in the traits.
-These models can also be fitted with <code><a href="https://because-pkg.github.io/because/reference/because.html" class="external-link">because()</a></code>. In the case
+These models can also be fitted with <code><a href="https://rdrr.io/pkg/because/man/because.html" class="external-link">because()</a></code>. In the case
 you have available repeated measures per species, it is sufficient to
 provide the data frame with all measurements (i.e. multiple rows per
 species) and specify the <code>id_col</code> argument to indicate the
-species identifier column. <code><a href="https://because-pkg.github.io/because/reference/because.html" class="external-link">because()</a></code> will automatically
+species identifier column. <code><a href="https://rdrr.io/pkg/because/man/because.html" class="external-link">because()</a></code> will automatically
 format the data to create a response matrix with species in rows and
 replicates in columns, padding with <code>NA</code>s as necessary. We
 will use the same data simulated in von Hardenberg and Gonzalez-Voyer
@@ -330,7 +331,7 @@ of the 100 species) and 6 columns (species identifier and 5 traits).
 Let’s load the data and fit the same model as before accounting for the
 repeated measures:</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://because-pkg.github.io" class="external-link">because</a></span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://because-pkg.github.io/because" class="external-link">because</a></span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">RhinoMulti.dat</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">rhino.tree</span><span class="op">)</span></span>
 <span></span>
@@ -340,7 +341,7 @@ repeated measures:</p>
 <span>    <span class="va">DD</span> <span class="op">~</span> <span class="va">NL</span></span>
 <span>  <span class="op">)</span></span>
 <span></span>
-<span><span class="va">RhinoMulti.bc</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://because-pkg.github.io/because/reference/because.html" class="external-link">because</a></span><span class="op">(</span></span>
+<span><span class="va">RhinoMulti.bc</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/because/man/because.html" class="external-link">because</a></span><span class="op">(</span></span>
 <span>  equations <span class="op">=</span> <span class="va">RhinoMulti.eq</span>,</span>
 <span>  data <span class="op">=</span> <span class="va">RhinoMulti.dat</span>,</span>
 <span>  structure <span class="op">=</span> <span class="va">rhino.tree</span>,</span>
@@ -390,15 +391,15 @@ repeated measures:</p>
 <p>In von Hardenberg and Gonzalez-Voyer (2025) we showed also how to
 account for measurement error when only a single observation per species
 is available, but the measurement standard error is known. This can also
-be done with <code><a href="https://because-pkg.github.io/because/reference/because.html" class="external-link">because()</a></code> by providing for each trait a second
+be done with <code><a href="https://rdrr.io/pkg/because/man/because.html" class="external-link">because()</a></code> by providing for each trait a second
 collumn called <code>[TRAIT]_se</code> containing the standard error of
 the measurements for each species.</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://because-pkg.github.io" class="external-link">because</a></span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://because-pkg.github.io/because" class="external-link">because</a></span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">RhinoMulti_se.dat</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">rhino.tree</span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">RhinoMulti_se.bc</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://because-pkg.github.io/because/reference/because.html" class="external-link">because</a></span><span class="op">(</span></span>
+<span><span class="va">RhinoMulti_se.bc</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/because/man/because.html" class="external-link">because</a></span><span class="op">(</span></span>
 <span>  equations <span class="op">=</span> <span class="va">RhinoMulti.eq</span>,</span>
 <span>  data <span class="op">=</span> <span class="va">RhinoMulti_se.dat</span>,</span>
 <span>  structure <span class="op">=</span> <span class="va">rhino.tree</span>,</span>
@@ -447,47 +448,128 @@ the measurements for each species.</p>
 </div>
 </div>
 <div class="section level2">
-<h2 id="accounting-for-uncertainity-in-the-phylogenetic-tree">Accounting for uncertainity in the phylogenetic tree<a class="anchor" aria-label="anchor" href="#accounting-for-uncertainity-in-the-phylogenetic-tree"></a>
+<h2 id="accounting-for-uncertainty-in-the-phylogenetic-tree-multiphylo">Accounting for uncertainty in the phylogenetic tree
+(<code>multiPhylo</code>)<a class="anchor" aria-label="anchor" href="#accounting-for-uncertainty-in-the-phylogenetic-tree-multiphylo"></a>
 </h2>
 <p>In cases where there is uncertainty about the phylogenetic
-relationships among species, <code>because</code> allows users to fit
-models across a sample of trees as described in von Hardenberg and
-Gonzalez Voyer, 2025). With <code>because</code> this becomes trivial:
-You just need to provide a list of phylogenetic trees (class
-<code>multiPhylo</code>) to the <code>structure</code> argument instead
-of a single tree; <code>because</code> will then randomly sample one
-tree from the list at each MCMC iteration, effectively integrating over
-phylogenetic uncertainty when estimating model parameters.</p>
+relationships among species, <code>because</code> and
+<code>because.phybase</code> allow users to fit models across a
+posterior sample of trees (an <code>ape::multiPhylo</code> object).
+Simply pass the <code>multiPhylo</code> object to the
+<code>structure</code> argument:</p>
 <div class="section level3">
-<h3 id="high-performance-multiphylo-models-with-nimble">High-Performance <code>multiPhylo</code> Models with NIMBLE<a class="anchor" aria-label="anchor" href="#high-performance-multiphylo-models-with-nimble"></a>
+<h3 id="deterministic-phylogenetic-ensemble-tree_method-ensemble-default">1. Deterministic Phylogenetic Ensemble
+(<code>tree_method = "ensemble"</code>, Default)<a class="anchor" aria-label="anchor" href="#deterministic-phylogenetic-ensemble-tree_method-ensemble-default"></a>
 </h3>
-<p>When passing a large <code>multiPhylo</code> object (e.g., hundreds
-of trees for hundreds of species), the default JAGS engine may run very
-slowly. This is because JAGS is forced to evaluate large, dense
-variance-covariance matrices repeatedly as the MCMC sampler jumps
-between trees.</p>
-<p>To achieve massive speedups, we highly recommend using the
-<strong>NIMBLE</strong> engine (<code>engine = "nimble"</code>) for
-models containing <code>multiPhylo</code> objects. When using NIMBLE,
-<code>because.phybase</code> automatically switches to a
-highly-optimized Non-Centered Parameterization using pre-calculated
-Cholesky factors. NIMBLE compiles this directly into C++ code, allowing
-the MCMC to bypass heavy matrix decompositions entirely. This allows
-your models to run exponentially faster without exhausting your system
-memory.</p>
+<p>Starting in <code>because.phybase</code> v1.1.0, passing a
+<code>multiPhylo</code> object to <code>structure</code> defaults to
+<strong><code>tree_method = "ensemble"</code></strong> with
+<strong><code>n.chains = 2L</code></strong>. This runs
+<code>n.chains</code> independent MCMC chains on each of the
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>M</mi><annotation encoding="application/x-tex">M</annotation></semantics></math>
+trees
+(<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>M</mi><mo>×</mo><mn>2</mn></mrow><annotation encoding="application/x-tex">M \times 2</annotation></semantics></math>
+chains total) and pools the posterior draws with exact equal weight
+(<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>1</mn><mi>/</mi><mi>M</mi></mrow><annotation encoding="application/x-tex">1/M</annotation></semantics></math>
+per tree, Bayesian Model Averaging):</p>
+<ul>
+<li>In <strong>NumPyro</strong> (<code>engine = "numpyro"</code>), JAX
+compiles the pure <code>NUTS</code> kernel <strong>only once</strong>
+and executes up to <code>n.cores</code> chains simultaneously across
+trees in parallel waves.</li>
+<li>Because each tree has
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo>≥</mo><mn>2</mn></mrow><annotation encoding="application/x-tex">\ge 2</annotation></semantics></math>
+chains, <code><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary()</a></code> and <code><a href="https://rdrr.io/pkg/because/man/check_multicov.html" class="external-link">check_multicov()</a></code> (or
+<code><a href="../reference/check_multiphylo.html">check_multiphylo()</a></code>) cleanly separate <strong>within-tree
+MCMC convergence (<code>Rhat_MCMC</code>)</strong> from
+<strong>between-tree phylogenetic sensitivity
+(<code>Rhat_tree</code>)</strong>.</li>
+</ul>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># Ensure you have the 'nimble' package installed from CRAN</span></span>
-<span><span class="co"># install.packages("nimble")</span></span>
+<code class="sourceCode R"><span><span class="co"># Default: Ensemble mode (M trees x 2 chains/tree) parallelized across 8 CPU cores</span></span>
+<span><span class="va">fit_multi</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/because/man/because.html" class="external-link">because</a></span><span class="op">(</span></span>
+<span>    equations       <span class="op">=</span> <span class="va">sem8_eq</span>,</span>
+<span>    data            <span class="op">=</span> <span class="va">rhino.dat</span>,</span>
+<span>    structure       <span class="op">=</span> <span class="va">rhino.multi.tree</span>, <span class="co"># A multiPhylo object</span></span>
+<span>    id_col          <span class="op">=</span> <span class="st">"SP"</span>,</span>
+<span>    engine          <span class="op">=</span> <span class="st">"numpyro"</span>,</span>
+<span>    n.cores         <span class="op">=</span> <span class="fl">8</span>,                <span class="co"># Automatically enables parallel execution across 8 cores</span></span>
+<span>    tree_method     <span class="op">=</span> <span class="st">"ensemble"</span>,       <span class="co"># Default for multiPhylo</span></span>
+<span>    n.chains        <span class="op">=</span> <span class="fl">2</span>                 <span class="co"># Default: 2 chains per tree (M x 2 chains total)</span></span>
+<span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">fit_multi_fast</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://because-pkg.github.io/because/reference/because.html" class="external-link">because</a></span><span class="op">(</span></span>
-<span>    equations <span class="op">=</span> <span class="va">sem8_eq</span>,</span>
-<span>    data <span class="op">=</span> <span class="va">rhino.dat</span>,</span>
-<span>    structure <span class="op">=</span> <span class="va">rhino.multi.tree</span>, <span class="co"># A multiPhylo object</span></span>
-<span>    id_col <span class="op">=</span> <span class="st">"SP"</span>,</span>
-<span>    engine <span class="op">=</span> <span class="st">"nimble"</span>, <span class="co"># Use NIMBLE for high-performance Cholesky parameterization</span></span>
-<span>    parallel <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>    n.cores <span class="op">=</span> <span class="fl">3</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">fit_multi</span><span class="op">)</span>        <span class="co"># Reports both Rhat (within-tree) and Rhat_tree (between-tree)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/pkg/because/man/check_multicov.html" class="external-link">check_multicov</a></span><span class="op">(</span><span class="va">fit_multi</span><span class="op">)</span> <span class="co"># Full multiPhylo BMA &amp; phylogenetic sensitivity report + plot</span></span></code></pre></div>
+</div>
+<div class="section level3">
+<h3 id="multi-backbone-phylogenetic-ensembles">2. Multi-Backbone Phylogenetic Ensembles<a class="anchor" aria-label="anchor" href="#multi-backbone-phylogenetic-ensembles"></a>
+</h3>
+<p>Phylogenetic uncertainty often extends beyond branch lengths to deep
+topological disagreements between competing backbone hypotheses (e.g.,
+Jetz et al. vs. McTavish et al. for birds).</p>
+<p>You can supply competing backbones directly as a named list to
+<code>structure</code>:</p>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Direct named list of candidate backbones (no wrappers required)</span></span>
+<span><span class="va">backbones</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
+<span>  Jetz     <span class="op">=</span> <span class="va">jetz_trees</span>,      <span class="co"># multiPhylo of 10 trees</span></span>
+<span>  McTavish <span class="op">=</span> <span class="va">mctavish_trees</span>   <span class="co"># multiPhylo of 10 trees</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">fit_bb</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/because/man/because.html" class="external-link">because</a></span><span class="op">(</span></span>
+<span>  equations       <span class="op">=</span> <span class="va">sem8_eq</span>,</span>
+<span>  data            <span class="op">=</span> <span class="va">rhino.dat</span>,</span>
+<span>  structure       <span class="op">=</span> <span class="va">backbones</span>,</span>
+<span>  id_col          <span class="op">=</span> <span class="st">"SP"</span>,</span>
+<span>  engine          <span class="op">=</span> <span class="st">"numpyro"</span>,</span>
+<span>  n.chains        <span class="op">=</span> <span class="fl">2</span>,        <span class="co"># 2 chains per tree (20 trees x 2 = 40 chains total)</span></span>
+<span>  n.cores         <span class="op">=</span> <span class="fl">8</span></span>
 <span><span class="op">)</span></span></code></pre></div>
+<p><code>because</code> automatically flattens candidate trees into an
+ensemble and partitions variance across distinct levels via
+<code><a href="https://rdrr.io/pkg/because/man/check_multicov.html" class="external-link">check_multicov()</a></code>: -
+<strong><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mover><mi>R</mi><mo accent="true">̂</mo></mover><mtext mathvariant="normal">MCMC</mtext></msub><annotation encoding="application/x-tex">\hat{R}_{\text{MCMC}}</annotation></semantics></math></strong>:
+MCMC convergence within each individual tree
+(<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mrow><mi mathvariant="normal">max</mi><mo>⁡</mo></mrow><mi>k</mi></msub><msub><mover><mi>R</mi><mo accent="true">̂</mo></mover><mi>k</mi></msub><mo>&lt;</mo><mn>1.05</mn></mrow><annotation encoding="application/x-tex">\max_k \hat{R}_k &lt; 1.05</annotation></semantics></math>).
+-
+<strong><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mover><mi>R</mi><mo accent="true">̂</mo></mover><mtext mathvariant="normal">phylo</mtext></msub><annotation encoding="application/x-tex">\hat{R}_{\text{phylo}}</annotation></semantics></math>
+(Within-Backbone)</strong>: Sensitivity to branch length and dating
+noise within each backbone. -
+<strong><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mover><mi>R</mi><mo accent="true">̂</mo></mover><mtext mathvariant="normal">backbone</mtext></msub><annotation encoding="application/x-tex">\hat{R}_{\text{backbone}}</annotation></semantics></math>
+(Between-Backbone)</strong>: Sensitivity to deep topological conflict
+across backbones. - <strong>Law of Total Variance Decomposition (%
+Uncertainty)</strong>: Orthogonally partitions total posterior variance
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mtext mathvariant="normal">Var</mtext><mtext mathvariant="normal">total</mtext></msub><mo stretchy="false" form="prefix">(</mo><mi>θ</mi><mo stretchy="false" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">\text{Var}_{\text{total}}(\theta)</annotation></semantics></math>
+into <code>% MCMC</code> (data sampling variance), <code>% Tree</code>
+(within-backbone dating/branch lengths), and <code>% Backbone</code>
+(hypotheses conflict), summing to exactly 100%.</p>
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Publication-ready diagnostic report and 2-panel figure</span></span>
+<span><span class="fu"><a href="https://rdrr.io/pkg/because/man/check_multicov.html" class="external-link">check_multicov</a></span><span class="op">(</span><span class="va">fit_bb</span>, plot <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
+</div>
+<div class="section level3">
+<h3 id="categorical-tree-index-sampling-tree_method-dcat">3. Categorical Tree-Index Sampling
+(<code>tree_method = "dcat"</code>)<a class="anchor" aria-label="anchor" href="#categorical-tree-index-sampling-tree_method-dcat"></a>
+</h3>
+<p>If you prefer the stochastic tree-index sampling approach
+(<code>K_tree ~ dcat(p[])</code>) from von Hardenberg and Gonzalez-Voyer
+(2025), set <code>tree_method = "dcat"</code> in <code><a href="https://rdrr.io/pkg/because/man/because.html" class="external-link">because()</a></code>.
+In NumPyro, <code>tree_method = "dcat"</code> automatically applies
+<strong>Spectral Gaussian Marginalization</strong> to observed Gaussian
+equations and aligns eigenvector signs across trees:</p>
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">fit_multi_dcat</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/because/man/because.html" class="external-link">because</a></span><span class="op">(</span></span>
+<span>    equations   <span class="op">=</span> <span class="va">sem8_eq</span>,</span>
+<span>    data        <span class="op">=</span> <span class="va">rhino.dat</span>,</span>
+<span>    structure   <span class="op">=</span> <span class="va">rhino.multi.tree</span>,</span>
+<span>    id_col      <span class="op">=</span> <span class="st">"SP"</span>,</span>
+<span>    engine      <span class="op">=</span> <span class="st">"numpyro"</span>,</span>
+<span>    tree_method <span class="op">=</span> <span class="st">"dcat"</span>,</span>
+<span>    n.chains    <span class="op">=</span> <span class="fl">4</span>,</span>
+<span>    n.cores     <span class="op">=</span> <span class="fl">4</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/pkg/because/man/check_multicov.html" class="external-link">check_multicov</a></span><span class="op">(</span><span class="va">fit_multi_dcat</span><span class="op">)</span> <span class="co"># Inspects within-chain tree jumping and tree weights</span></span></code></pre></div>
 </div>
 </div>
 <div class="section level2">
@@ -511,7 +593,7 @@ model evaluation using leave-one-out cross-validation and WAIC.
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.1.</p>
 </div>
 
     </footer>

@@ -68,8 +68,7 @@ sem8.eq <- list(
 
 ## Running the Model
 
-When we run
-[`because()`](https://because-pkg.github.io/because/reference/because.html)
+When we run [`because()`](https://rdrr.io/pkg/because/man/because.html)
 with missing data, it automatically detects the `NA` values and adjusts
 the JAGS model structure.
 
@@ -155,12 +154,12 @@ You will notice two important messages if you run the above model:
 Since the missing values are now parameters in the model, we can
 actually inspect their estimated values (posterior distributions). To do
 this, you must run
-[`because()`](https://because-pkg.github.io/because/reference/because.html)
-with the argument `monitor = "all"`. This ensures that the imputed
-stochastic nodes are saved in the output.
+[`because()`](https://rdrr.io/pkg/because/man/because.html) with the
+argument `monitor = "all"`. This ensures that the imputed stochastic
+nodes are saved in the output.
 
 You can use the helper function
-[`extract_imputed()`](https://because-pkg.github.io/because/reference/extract_imputed.html)
+[`extract_imputed()`](https://rdrr.io/pkg/because/man/extract_imputed.html)
 to easily retrieve these values:
 
 ``` r
