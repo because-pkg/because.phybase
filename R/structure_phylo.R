@@ -922,6 +922,7 @@ prepare_structure_data.multiPhylo <- function(
 #' @param ... Additional arguments.
 #'
 #' @return A character string of Python code.
+#' @keywords internal
 #' @exportS3Method because::numpyro_structure_definition phylo
 numpyro_structure_definition.phylo <- function(structure, variable_name = "err", ...) {
     py_code <- "
@@ -958,6 +959,7 @@ def phylo_transform(numpyro, jnp, jax, dist, var, group_name, num_groups, matrix
 #' @param variable_name The response variable name.
 #' @param ... Additional arguments.
 #'
+#' @keywords internal
 #' @exportS3Method because::numpyro_structure_definition multiPhylo
 numpyro_structure_definition.multiPhylo <- function(structure, variable_name = "err", ...) {
     args <- list(...)
@@ -1014,6 +1016,7 @@ def multiPhylo_transform(numpyro, jnp, jax, dist, var, group_name, num_groups, m
 #'
 #' @param structure The multiPhylo structure.
 #' @param ... Additional arguments.
+#' @keywords internal
 #' @exportS3Method because::get_structure_name_hook multiPhylo
 get_structure_name_hook.multiPhylo <- function(structure, ...) {
     return("multiPhylo")

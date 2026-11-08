@@ -21,3 +21,4 @@ Implements the \code{numpyro_structure_definition} S3 method for \code{phylo} ob
 Returns the JAX/NumPyro Python code to compute the Cholesky factor of the
 phylogenetic variance-covariance matrix dynamically scaled by Pagel's lambda.
 }
+\keyword{internal}

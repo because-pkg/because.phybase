@@ -16,3 +16,4 @@
 \description{
 Implements the \code{numpyro_structure_definition} S3 method for \code{multiPhylo} objects.
 }
+\keyword{internal}

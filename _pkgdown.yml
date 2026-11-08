@@ -18,6 +18,12 @@ navbar:
       href: https://because-pkg.github.io/because/articles/announcing-because.html
 
 reference:
+  - title: "Phylogenetic Comparative Tools & Diagnostics"
+    desc: "Functions for evolutionary models, multi-tree ensembles, and sensitivity diagnostics."
+    contents:
+      - evo_model
+      - tree_control
+      - check_multiphylo
   - title: "S3 Methods for Phylogenetic Structures"
     desc: "Methods extending the because engine for `phylo` and `multiPhylo` objects."
     contents:

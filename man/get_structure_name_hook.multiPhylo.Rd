@@ -14,3 +14,4 @@
 \description{
 Get Structure Name Hook for multiPhylo
 }
+\keyword{internal}
