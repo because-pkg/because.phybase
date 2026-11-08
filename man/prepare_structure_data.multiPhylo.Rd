@@ -11,14 +11,23 @@
 
 \item{data}{The model data frame.}
 
-\item{optimize}{Logical. If TRUE (default), returns precision matrices.}
+\item{optimize}{Logical. If TRUE (default), returns precision matrices / eigendecompositions.}
 
 \item{quiet}{Logical. If TRUE, suppresses messages.}
 
-\item{...}{Additional arguments (ignored).}
+\item{...}{Additional arguments passed from \code{because()}, including:
+\itemize{
+\item \code{tree_method}: \code{"ensemble"} (default; runs \code{n.chains} MCMC chains
+per tree and combines posteriors with equal weight) or \code{"dcat"} (samples
+a categorical tree index \code{K_tree} inside MCMC, using eigenvector sign alignment
+and spectral Gaussian marginalization for pure Gaussian models in NumPyro).
+\item \code{n.chains}: Integer number of MCMC chains to run per tree when
+\code{tree_method = "ensemble"} (default \code{2L}).
+}}
 }
 \value{
-A list with \code{structure_object} (standardized trees) and \code{data_list} (JAGS data).
+A list with \code{structure_object} (standardized trees with \code{tree_method}
+and \code{n.chains} attributes) and \code{data_list} (MCMC data).
 }
 \description{
 Implements the \code{prepare_structure_data} S3 method for \code{multiPhylo} objects.

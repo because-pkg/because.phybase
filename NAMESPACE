@@ -7,8 +7,14 @@ S3method(jags_structure_definition,multiPhylo)
 S3method(jags_structure_definition,phylo)
 S3method(prepare_structure_data,multiPhylo)
 S3method(prepare_structure_data,phylo)
+export(check_multiphylo)
 export(evo_model)
-importFrom(ape,branching.times)
-importFrom(ape,vcv)
-importFrom(because,jags_structure_definition)
-importFrom(because,prepare_structure_data)
+export(tree_control)
+importFrom(ape,
+  branching.times,
+  vcv
+)
+importFrom(because,
+  jags_structure_definition,
+  prepare_structure_data
+)

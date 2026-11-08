@@ -45,6 +45,103 @@ evo_model <- function(tree, model = "BM", n_alpha = 50) {
     return(tree)
 }
 
+#' Configure Multi-Tree (`multiPhylo`) Sampling and Ensemble Options
+#'
+#' Attaches multi-tree sampling specifications to a `multiPhylo` object.
+#' By default in `because.phybase` (>= 1.1.0), `multiPhylo` objects use
+#' `"ensemble"` mode (Bayesian Model Averaging across trees with deterministic
+#' chain-to-tree assignment, defaulting to `n.chains = 2` chains per tree so within-tree
+#' convergence can be separated from between-tree phylogenetic sensitivity).
+#' Users can optionally select `method = "dcat"` to use the categorical
+#' index variable (`K_tree ~ dcat(p[])`).
+#'
+#' @param tree A `multiPhylo` object.
+#' @param method Character. Either `"ensemble"` (default; runs `n.chains`
+#'   chains on each tree and combines posteriors with equal weight) or `"dcat"`
+#'   (samples a categorical tree index `K_tree` inside MCMC).
+#' @param n.chains Integer. Number of MCMC chains to run per tree when
+#'   `method = "ensemble"` (default `2L`). Setting `n.chains >= 2` enables
+#'   separate calculation of within-tree convergence (`Rhat`) and between-tree
+#'   sensitivity (`Rhat_tree`).
+#'
+#' @return The `multiPhylo` object with `"tree_method"` and `"n.chains"`
+#'   attributes attached.
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' # Default ensemble mode with 2 chains per tree
+#' trees <- tree_control(my_multiphylo, method = "ensemble", n.chains = 2)
+#'
+#' # Legacy categorical tree-index mode
+#' trees_dcat <- tree_control(my_multiphylo, method = "dcat")
+#' }
+#' @param tree A `multiPhylo` object from the `ape` package, or a named list of
+#'   `multiPhylo` / `phylo` objects representing multiple phylogenetic backbones
+#'   (e.g., `list(Jetz = jetz_trees, McTavish = mctav_trees)`).
+#' @param method Character string specifying the multi-tree sampling strategy:
+#'   - `"ensemble"` (default): Runs replicate MCMC chains assigned deterministically
+#'     to individual trees to produce an exact Bayesian Model Average (BMA).
+#'   - `"dcat"`: Samples a discrete tree index dynamically via Gibbs sampling.
+#' @param n.chains Integer. Number of MCMC chains to run per tree in `"ensemble"`
+#'   mode (default 2).
+#' @param backbone Optional character vector specifying the backbone name for each
+#'   tree. Automatically inferred if `tree` is a named list.
+#'
+#' @return The `multiPhylo` object with `"tree_method"`, `"n.chains"`, and optional
+#'   `"backbone"` attributes attached.
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' # Standard ensemble mode
+#' trees <- tree_control(my_multiphylo, method = "ensemble", n.chains = 2)
+#'
+#' # Multi-backbone ensemble mode
+#' trees_bb <- tree_control(list(Jetz = jetz_trees, McTavish = mctav_trees), n.chains = 2)
+#' }
+tree_control <- function(tree, method = c("ensemble", "dcat"), n.chains = 2L, backbone = NULL) {
+    if (is.list(tree) && !inherits(tree, "phylo") && !inherits(tree, "multiPhylo")) {
+        all_phylo <- length(tree) > 0 && all(vapply(tree, function(x) inherits(x, c("phylo", "multiPhylo")), logical(1)))
+        if (!all_phylo) {
+            stop("'tree' must be a multiPhylo object, or a list of multiPhylo/phylo objects.")
+        }
+        bb_names <- names(tree)
+        if (is.null(bb_names) || any(bb_names == "")) {
+            bb_names <- paste0("Backbone_", seq_along(tree))
+        }
+        flat_trees <- list()
+        bb_vec <- character(0)
+        for (i in seq_along(tree)) {
+            item <- tree[[i]]
+            b_name <- bb_names[i]
+            if (inherits(item, "multiPhylo")) {
+                for (k in seq_along(item)) {
+                    flat_trees[[length(flat_trees) + 1L]] <- item[[k]]
+                    bb_vec <- c(bb_vec, b_name)
+                }
+            } else {
+                flat_trees[[length(flat_trees) + 1L]] <- item
+                bb_vec <- c(bb_vec, b_name)
+            }
+        }
+        class(flat_trees) <- "multiPhylo"
+        tree <- flat_trees
+        if (is.null(backbone)) backbone <- bb_vec
+    }
+    if (!inherits(tree, "multiPhylo")) {
+        stop("'tree' must be a multiPhylo object.")
+    }
+    method <- match.arg(tolower(method[1]), c("ensemble", "dcat"))
+    n.chains <- as.integer(max(1L, n.chains))
+    attr(tree, "tree_method") <- method
+    attr(tree, "n.chains") <- n.chains
+    if (!is.null(backbone)) {
+        attr(tree, "backbone") <- as.character(backbone)
+    }
+    return(tree)
+}
+
 #' JAGS Structure Definition for Phylogenetic Trees
 #'
 #' Implements the `jags_structure_definition` S3 method for `phylo` objects.
@@ -353,6 +450,7 @@ prepare_structure_data.phylo <- function(
 
     # 3. Check dimensions against data
     N <- nrow(vcv_mat)
+    attr(phylo_tree, "n") <- as.integer(N)
 
     data_list <- list()
 
@@ -622,11 +720,20 @@ jags_structure_definition.multiPhylo <- function(
 #'
 #' @param structure A `multiPhylo` object from the `ape` package.
 #' @param data The model data frame.
-#' @param optimize Logical. If TRUE (default), returns precision matrices.
+#' @param optimize Logical. If TRUE (default), returns precision matrices / eigendecompositions.
 #' @param quiet Logical. If TRUE, suppresses messages.
-#' @param ... Additional arguments (ignored).
+#' @param ... Additional arguments passed from `because()`, including:
+#'   \itemize{
+#'     \item `tree_method`: `"ensemble"` (default; runs `n.chains` MCMC chains
+#'       per tree and combines posteriors with equal weight) or `"dcat"` (samples
+#'       a categorical tree index `K_tree` inside MCMC, using eigenvector sign alignment
+#'       and spectral Gaussian marginalization for pure Gaussian models in NumPyro).
+#'     \item `n.chains`: Integer number of MCMC chains to run per tree when
+#'       `tree_method = "ensemble"` (default `2L`).
+#'   }
 #'
-#' @return A list with `structure_object` (standardized trees) and `data_list` (JAGS data).
+#' @return A list with `structure_object` (standardized trees with `tree_method`
+#'   and `n.chains` attributes) and `data_list` (MCMC data).
 #'
 #' @importFrom ape vcv branching.times
 #' @importFrom because prepare_structure_data
@@ -640,14 +747,33 @@ prepare_structure_data.multiPhylo <- function(
 ) {
     args <- list(...)
     engine <- args$engine %||% "jags"
-    if (engine == "numpyro") {
-        if (!quiet) message("Using DiscreteHMCGibbs for multiPhylo marginalization in NumPyro...")
-    }
     if (!requireNamespace("ape", quietly = TRUE)) {
         stop("Package 'ape' is required for phylogenetic models.")
     }
 
+    # Preserve custom attributes across lapply
+    saved_evo_model <- attr(structure, "evo_model")
+    saved_n_alpha <- attr(structure, "n_alpha")
+    saved_backbone <- attr(structure, "backbone")
+    tree_method <- args$tree_method %||% attr(structure, "tree_method") %||% "ensemble"
+    tree_method <- match.arg(tolower(tree_method[1]), c("ensemble", "dcat"))
+    n_chains_val <- as.integer(max(1L, args$n.chains %||% attr(structure, "n.chains") %||% 2L))
+
     n_trees <- length(structure)
+
+    if (!quiet) {
+        if (tree_method == "ensemble") {
+            bb_msg <- if (!is.null(saved_backbone)) {
+                sprintf(" across %d backbones (%s)", length(unique(saved_backbone)), paste(unique(saved_backbone), collapse = ", "))
+            } else ""
+            message(sprintf(
+                "Preparing multiPhylo ensemble (%d trees%s x %d chains/tree = %d total chains) for %s...",
+                n_trees, bb_msg, n_chains_val, n_trees * n_chains_val, toupper(engine)
+            ))
+        } else if (engine == "numpyro") {
+            message("Using DiscreteHMCGibbs with Spectral Gaussian Marginalization & Sign-Aligned Eigenvectors (tree_method = 'dcat') in NumPyro...")
+        }
+    }
 
     # 1. Standardize all trees
     structure <- lapply(structure, function(phylo_tree) {
@@ -658,6 +784,11 @@ prepare_structure_data.multiPhylo <- function(
         return(phylo_tree)
     })
     class(structure) <- "multiPhylo"
+    attr(structure, "evo_model") <- saved_evo_model
+    attr(structure, "n_alpha") <- saved_n_alpha
+    attr(structure, "tree_method") <- tree_method
+    attr(structure, "n.chains") <- n_chains_val
+    attr(structure, "backbone") <- saved_backbone
 
     # 2. Compute matrices
     # Use first tree to get N
@@ -709,9 +840,15 @@ prepare_structure_data.multiPhylo <- function(
     }
 
     N <- nrow(first_vcv)
+    attr(structure, "n") <- as.integer(N)
 
     data_list <- list()
     data_list[["Ntree"]] <- n_trees
+    if (tree_method == "ensemble") {
+        data_list[[".ensemble_ntree"]] <- as.integer(n_trees)
+        data_list[[".ensemble_n_chains"]] <- as.integer(n_chains_val)
+        data_list[[".ensemble_k_var"]] <- paste0("K_tree_", args$s_name %||% "multiPhylo")
+    }
 
     if (engine == "numpyro") {
         if (!quiet) message("Calculating array of eigen decompositions for NumPyro...")
@@ -721,6 +858,12 @@ prepare_structure_data.multiPhylo <- function(
             vcv <- ape::vcv(structure[[i]])
             if (!is.null(target_order)) vcv <- vcv[target_order, target_order, drop=FALSE]
             eig <- eigen(vcv, symmetric = TRUE)
+            if (i > 1) {
+                # Align eigenvector signs to Tree 1 to eliminate arbitrary +-1 LAPACK sign flips
+                signs <- sign(colSums(eig$vectors * eigvecs_multi[, , 1]))
+                signs[signs == 0] <- 1
+                eig$vectors <- sweep(eig$vectors, 2, signs, `*`)
+            }
             eigvals_multi[, i] <- eig$values
             eigvecs_multi[,, i] <- eig$vectors
         }
@@ -828,9 +971,14 @@ def multiPhylo_transform(numpyro, jnp, jax, dist, var, group_name, num_groups, m
     n_trees = eigvals_all.shape[-1]
     
     k_name = f'K_tree_{group_name}'
-    if k_name not in shared_state:
-        shared_state[k_name] = numpyro.sample(k_name, dist.Categorical(probs=jnp.ones(n_trees)/n_trees))
-    K = shared_state[k_name]
+    if '_active_tree_idx' in matrix_dict and matrix_dict['_active_tree_idx'] is not None:
+        K = matrix_dict['_active_tree_idx']
+        if k_name not in shared_state:
+            shared_state[k_name] = numpyro.deterministic(k_name, K + 1)
+    else:
+        if k_name not in shared_state:
+            shared_state[k_name] = numpyro.sample(k_name, dist.Categorical(probs=jnp.ones(n_trees)/n_trees))
+        K = shared_state[k_name]
     
     # Safe indexing for arbitrary batch dimensions from enumeration
     # eigvals_all shape: (N, n_trees) -> (N, ...)
