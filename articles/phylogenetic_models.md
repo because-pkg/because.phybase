@@ -131,40 +131,36 @@ materials of the paper).
 ### The random effects formulation of because
 
 If you are familiar with the output obtained from that model, you may
-however have noticed that besides Pagel’s $`\lambda`$ parameters for
-each response variable, with
+however have noticed that besides Pagel’s \lambda parameters for each
+response variable, with
 [`because()`](https://rdrr.io/pkg/because/man/because.html) we also get
 estimates of the standard deviations of the phylogenetic and residual
 components (`sigma_[RESP]_phylo` and `sigma_[RESP]_res`, respectively).
 These are estimated because `because` uses an optimised random effect
 formulation to improve MCMC and significantly reduce runtime. While
 standard phylogenetic models must invert the covariance matrix at every
-iteration (as $`\lambda`$ changes), the random effect approach is
+iteration (as \lambda changes), the random effect approach is
 mathematically equivalent but computationally more efficent. `because`
 decomposes the response into three additive components:
 
-``` math
 y_i = \mu_i + u_i + \epsilon_i
-```
 
 where:
 
-- $`\mu_i`$ is the fixed effect (structural equation mean)
-- $`u_i`$ is the phylogenetic random effect:
-  $`\mathbf{u} \sim \mathcal{N}(\mathbf{0}, \sigma_u^2 \mathbf{V})`$
-- $`\epsilon_i`$ is the residual error:
-  $`\boldsymbol{\epsilon} \sim \mathcal{N}(\mathbf{0}, \sigma_e^2 \mathbf{I})`$
+- \mu_i is the fixed effect (structural equation mean)
+- u_i is the phylogenetic random effect: \mathbf{u} \sim
+  \mathcal{N}(\mathbf{0}, \sigma_u^2 \mathbf{V})
+- \epsilon_i is the residual error: \boldsymbol{\epsilon} \sim
+  \mathcal{N}(\mathbf{0}, \sigma_e^2 \mathbf{I})
 
 This allows us to pre-compute the inverse phylogenetic
-variance-covariance matrix ($`\mathbf{V}^{-1}`$) only once and pass it
-to JAGS as fixed data. JAGS simply scales this fixed precision matrix by
-1/$`\sigma`$, avoiding costly repeated inversions.
+variance-covariance matrix (\mathbf{V}^{-1}) only once and pass it to
+JAGS as fixed data. JAGS simply scales this fixed precision matrix by
+1/\sigma, avoiding costly repeated inversions.
 
-Consequently, $`\lambda`$ is derived from the posterior variance
-components as:
-``` math
-\lambda = \frac{\sigma_{phylo}^2}{\sigma_{phylo}^2 + \sigma_{res}^2}
-```
+Consequently, \lambda is derived from the posterior variance components
+as: \lambda = \frac{\sigma\_{phylo}^2}{\sigma\_{phylo}^2 +
+\sigma\_{res}^2}
 
 This is the approach also used in other packages such as `MCMCglmm`
 (Hadfield, 2010) and `brms` (Bürkner, 2017).
@@ -395,14 +391,13 @@ pass the `multiPhylo` object to the `structure` argument:
 Starting in `because.phybase` v1.1.0, passing a `multiPhylo` object to
 `structure` defaults to **`tree_method = "ensemble"`** with
 **`n.chains = 2L`**. This runs `n.chains` independent MCMC chains on
-each of the $`M`$ trees ($`M \times 2`$ chains total) and pools the
-posterior draws with exact equal weight ($`1/M`$ per tree, Bayesian
-Model Averaging):
+each of the M trees (M \times 2 chains total) and pools the posterior
+draws with exact equal weight (1/M per tree, Bayesian Model Averaging):
 
 - In **NumPyro** (`engine = "numpyro"`), JAX compiles the pure `NUTS`
   kernel **only once** and executes up to `n.cores` chains
   simultaneously across trees in parallel waves.
-- Because each tree has $`\ge 2`$ chains,
+- Because each tree has \ge 2 chains,
   [`summary()`](https://rdrr.io/r/base/summary.html) and
   [`check_multicov()`](https://rdrr.io/pkg/because/man/check_multicov.html)
   (or
@@ -459,14 +454,14 @@ fit_bb <- because(
 `because` automatically flattens candidate trees into an ensemble and
 partitions variance across distinct levels via
 [`check_multicov()`](https://rdrr.io/pkg/because/man/check_multicov.html): -
-**$`\hat{R}_{\text{MCMC}}`$**: MCMC convergence within each individual
-tree ($`\max_k \hat{R}_k < 1.05`$). - **$`\hat{R}_{\text{phylo}}`$
+**\hat{R}\_{\text{MCMC}}**: MCMC convergence within each individual tree
+(\max_k \hat{R}\_k \< 1.05). - **\hat{R}\_{\text{phylo}}
 (Within-Backbone)**: Sensitivity to branch length and dating noise
-within each backbone. - **$`\hat{R}_{\text{backbone}}`$
+within each backbone. - **\hat{R}\_{\text{backbone}}
 (Between-Backbone)**: Sensitivity to deep topological conflict across
 backbones. - **Law of Total Variance Decomposition (% Uncertainty)**:
 Orthogonally partitions total posterior variance
-$`\text{Var}_{\text{total}}(\theta)`$ into `% MCMC` (data sampling
+\text{Var}\_{\text{total}}(\theta) into `% MCMC` (data sampling
 variance), `% Tree` (within-backbone dating/branch lengths), and
 `% Backbone` (hypotheses conflict), summing to exactly 100%.
 

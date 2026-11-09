@@ -6,10 +6,10 @@
   default for `multiPhylo`)**: Passing a `multiPhylo` object to
   `because(..., structure = trees)` now defaults to
   `tree_method = "ensemble"` with `chains_per_tree = 2L` (Bayesian Model
-  Averaging with guaranteed equal representation across all $`M`$ trees,
+  Averaging with guaranteed equal representation across all M trees,
   following `brms::brm_multiple` / `mulTree`). In `engine = "numpyro"`,
-  the pure `NUTS` kernel is compiled only once and executed across all
-  $`M \times C`$ tree chains in multi-core parallel waves (`n.cores`).
+  the pure `NUTS` kernel is compiled only once and executed across all M
+  \times C tree chains in multi-core parallel waves (`n.cores`).
 - **Split MCMC vs. Phylogenetic Sensitivity Diagnostics
   ([`check_multiphylo()`](https://because-pkg.github.io/because.phybase/reference/check_multiphylo.md))**:
   Added exported
@@ -21,9 +21,9 @@
 - **Spectral Gaussian Marginalization & Eigenvector Sign Alignment for
   `tree_method = "dcat"`**: When `tree_method = "dcat"` is requested in
   NumPyro, observed Gaussian equations analytically marginalize out the
-  species random effect in the tree’s eigenbasis
-  ($`\mathbf{Q}_K^\top (\mathbf{y} - \boldsymbol{\mu})`$), and
-  eigenvector signs are aligned across trees relative to Tree 1.
+  species random effect in the tree’s eigenbasis (\mathbf{Q}\_K^\top
+  (\mathbf{y} - \boldsymbol{\mu})), and eigenvector signs are aligned
+  across trees relative to Tree 1.
 
 ## because.phybase 1.0.2 (2026-10-28)
 
