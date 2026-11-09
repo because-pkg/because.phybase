@@ -51,33 +51,22 @@ jobs:
 
       - name: Install system dependencies (Windows)
         if: runner.os == 'Windows'
-        env:
-          JAGS_VERSION: "4.3.2"
         run: |
-          $progressPreference = 'silentlyContinue'
-          $jagsUrl = "https://sourceforge.net/projects/mcmc-jags/files/JAGS/4.x/Windows/JAGS-$env:JAGS_VERSION.exe/download"
-          $installer = "$env:TEMP\JAGS-$env:JAGS_VERSION.exe"
-          # Retry download up to 3 times
-          $maxRetries = 3
-          for ($i = 1; $i -le $maxRetries; $i++) {
-            try {
-              Invoke-WebRequest -Uri $jagsUrl -OutFile $installer -MaximumRedirection 10 -UserAgent "Mozilla/5.0"
-              if (Test-Path $installer) { break }
-            } catch {
-              Write-Host "Download attempt $i failed: $_"
-              if ($i -eq $maxRetries) { throw "JAGS installer download failed after $maxRetries attempts" }
-              Start-Sleep -Seconds 5
-            }
+          if ("${{ runner.arch }}" -eq "ARM64") {
+            $url = "https://github.com/r-universe-org/actions/releases/download/JAGS-4.3.2/JAGS-4.3.2-aarch64.exe"
+          } else {
+            $url = "https://github.com/r-universe-org/actions/releases/download/JAGS-4.3.1/JAGS-4.3.1.exe"
           }
-          if (-not (Test-Path $installer)) { throw "JAGS installer download failed" }
-          $proc = Start-Process -FilePath $installer -ArgumentList "/S" -Wait -PassThru
-          if ($proc.ExitCode -ne 0) { throw "JAGS installer exited with code $($proc.ExitCode)" }
-          # Add JAGS to PATH for rjags
-          $jagsPath = "C:\Program Files\JAGS\JAGS-$env:JAGS_VERSION"
-          if (Test-Path "$jagsPath\x64\bin") {
-            echo "$jagsPath\x64\bin" | Out-File -Append -FilePath $env:GITHUB_PATH -Encoding utf8
-          }
-          echo "JAGS_HOME=$jagsPath" | Out-File -Append -FilePath $env:GITHUB_ENV -Encoding utf8
+          $jags = Join-Path $env:RUNNER_TEMP 'JAGS.exe'
+          curl.exe -sSL -o $jags $url
+          Start-Process $jags -ArgumentList '/S','/AllUsers' -Wait
+          $dir = Get-ChildItem 'C:\Program Files\JAGS\JAGS-*' | Select-Object -First 1
+          if (-not $dir) { throw 'JAGS did not install' }
+          $short = (New-Object -ComObject Scripting.FileSystemObject).GetFolder($dir.FullName).ShortPath
+          Write-Host "Setting JAGS_ROOT=$short"
+          Add-Content -Path $env:GITHUB_ENV -Value "JAGS_ROOT=$short"
+          Add-Content -Path $env:GITHUB_ENV -Value "JAGS_HOME=$short"
+          Add-Content -Path $env:GITHUB_PATH -Value "$($dir.FullName)\x64\bin"
         shell: pwsh
 
       - uses: r-lib/actions/setup-r@v2
