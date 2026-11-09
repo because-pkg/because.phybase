@@ -2,6 +2,7 @@ url: https://because-pkg.github.io/because.phybase/
 template:
   bootstrap: 5
   light-switch: true
+  math-rendering: katex
   bslib:
     primary: "#009F7F"
     navbar-bg: "#009F7F"
