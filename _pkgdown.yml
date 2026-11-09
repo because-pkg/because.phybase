@@ -8,15 +8,12 @@ template:
     navbar-bg: "#009F7F"
 navbar:
   structure:
-    left: [home, reference, articles, blog]
+    left: [home, reference, articles, news]
     right: [because, search, github]
   components:
     because:
       text: because
       href: https://because-pkg.github.io
-    blog:
-      text: "Blog"
-      href: https://because-pkg.github.io/because/articles/announcing-because.html
 
 reference:
   - title: "Phylogenetic Comparative Tools & Diagnostics"
