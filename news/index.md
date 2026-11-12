@@ -7,23 +7,32 @@
   `because(..., structure = trees)` now defaults to
   `tree_method = "ensemble"` with `chains_per_tree = 2L` (Bayesian Model
   Averaging with guaranteed equal representation across all M trees,
-  following `brms::brm_multiple` / `mulTree`). In `engine = "numpyro"`,
-  the pure `NUTS` kernel is compiled only once and executed across all M
-  \times C tree chains in multi-core parallel waves (`n.cores`).
+  following the multi-tree Bayesian integration framework of
+  [*mulTree*](https://doi.org/10.5281/zenodo.12902) \[Guillerme & Healy
+  2014\] and [Nakagawa & de Villemereuil
+  2019](https://doi.org/10.1093/sysbio/syy089)). In
+  `engine = "numpyro"`, the pure `NUTS` kernel is compiled only once and
+  executed across all M \times C tree chains in multi-core parallel
+  waves (`n.cores`).
 - **Split MCMC vs. Phylogenetic Sensitivity Diagnostics
   ([`check_multiphylo()`](https://because-pkg.github.io/because.phybase/reference/check_multiphylo.md))**:
   Added exported
   [`check_multiphylo()`](https://because-pkg.github.io/because.phybase/reference/check_multiphylo.md)
-  diagnostic function and updated
-  [`summary()`](https://rdrr.io/r/base/summary.html) to report both
-  within-tree MCMC convergence (`Rhat` / `Rhat_within`) and between-tree
-  phylogenetic sensitivity (`Rhat_tree`).
+  diagnostic function (providing a domain-specific phylogenetic alias
+  for the general covariance engine
+  [`because::check_multicov()`](https://rdrr.io/pkg/because/man/check_multicov.html))
+  and updated [`summary()`](https://rdrr.io/r/base/summary.html) to
+  report both within-tree MCMC convergence (`Rhat` / `Rhat_within`) and
+  between-tree phylogenetic sensitivity (`Rhat_tree`).
 - **Spectral Gaussian Marginalization & Eigenvector Sign Alignment for
   `tree_method = "dcat"`**: When `tree_method = "dcat"` is requested in
-  NumPyro, observed Gaussian equations analytically marginalize out the
-  species random effect in the tree’s eigenbasis (\mathbf{Q}\_K^\top
-  (\mathbf{y} - \boldsymbol{\mu})), and eigenvector signs are aligned
-  across trees relative to Tree 1.
+  NumPyro (sampling candidate trees dynamically via a discrete
+  categorical prior; [de Villemereuil et
+  al. 2012](https://doi.org/10.1186/1471-2148-12-102)), observed
+  Gaussian equations analytically marginalize out the species random
+  effect in the tree’s eigenbasis (\mathbf{Q}\_K^\top (\mathbf{y} -
+  \boldsymbol{\mu})), and eigenvector signs are aligned across trees
+  relative to Tree 1.
 
 ## because.phybase 1.0.2 (2026-10-28)
 
