@@ -2,6 +2,11 @@
 
 ## because.phybase 1.1.0 (2026-11-07)
 
+> All notable changes to `because.phybase` are documented in this file.
+> The format is based on [Keep a
+> Changelog](https://keepachangelog.com/en/2.0.0/), and this project
+> adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
 - **Deterministic Phylogenetic Ensemble (`tree_method = "ensemble"`, new
   default for `multiPhylo`)**: Passing a `multiPhylo` object to
   `because(..., structure = trees)` now defaults to
